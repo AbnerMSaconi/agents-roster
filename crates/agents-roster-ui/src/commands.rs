@@ -33,7 +33,10 @@ pub(crate) fn handle_command(
                 h.update(move |b: &mut TrayIcon| b.always_on_top = top);
             }
             save_cfg(deps, |c| c.always_on_top = top);
-            update_ui(&deps.panel, move |p| p.set_keep_on_top(top));
+            update_ui(&deps.panel, move |p| {
+                p.set_keep_on_top(top);
+                crate::x11_hints::apply_always_on_top(&p, top);
+            });
         }
         TrayCommand::Reminders(enabled) => {
             deps.reminders.store(enabled, Ordering::Relaxed);
@@ -136,6 +139,7 @@ fn apply_new_settings(
     update_ui(&deps.panel, move |p| {
         pal.apply_to_panel(&p);
         p.set_keep_on_top(top);
+        crate::x11_hints::apply_always_on_top(&p, top);
         p.set_reminders(rem);
         if vis_changed {
             if show {

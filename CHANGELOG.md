@@ -2,6 +2,8 @@
 
 ## 0.3.0 — 2026-11-17
 
+- Fixed "Always on top": it was on by default but never applied by the window manager until toggled by hand. It is now asserted when the window is mapped (normal start, tray start and when shown again).
+
 - Added authorship and provenance: `agents-roster about`, the commit id in `--version`, an embedded provenance record, per-file SPDX headers and a notice in the Control Panel footer.
 - Releases now verify the tag against `Cargo.toml` and the changelog, build with remapped paths (no local paths in the binary), include `BUILD-INFO.txt`, and publish a signed build provenance attestation.
 - Added `cargo deny` to CI, pinned CI to Rust 1.93, and documented security and privacy in `SECURITY.md`.

@@ -105,17 +105,18 @@ pub fn run_panel(
     let reminders = Arc::new(AtomicBool::new(initial.reminder_min > 0));
     let hide_tb = Arc::new(AtomicBool::new(initial.hide_from_taskbar));
     let blur_flag = Arc::new(AtomicBool::new(initial_settings.theme.blur));
-    let window_pending = Arc::new(AtomicBool::new(
-        initial.visible && (initial.hide_from_taskbar || initial_settings.theme.blur),
-    ));
+    // Window hints are re-applied once the X11 window is actually mapped.
+    let window_pending = Arc::new(AtomicBool::new(initial.visible));
     let cfg = Arc::new(Mutex::new(initial));
     let settings = Arc::new(Mutex::new(initial_settings));
     let palette = Arc::new(Mutex::new(pal));
     let latest_agents = Arc::new(Mutex::new(Vec::new()));
     let (tx, rx) = mpsc::channel::<TrayCommand>();
 
+    let top_cfg = Arc::clone(&cfg);
     x11_hints::install_window_hooks(
         &panel,
+        Arc::new(move || top_cfg.lock().map_or(true, |c| c.always_on_top)),
         hide_tb.clone(),
         blur_flag.clone(),
         window_pending.clone(),
