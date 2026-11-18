@@ -13,7 +13,7 @@ the 5-hour and 7-day limits. Agents started inside other agents appear indented 
 
 ## Control Panel
 
-Open it from the tray or right-click menu. Changes apply immediately.
+Open it from the tray or right-click menu, or start the app with `agents-roster --settings`. Changes apply immediately.
 
 | Tab | What it controls |
 |---|---|
@@ -28,10 +28,12 @@ Open it from the tray or right-click menu. Changes apply immediately.
 
 ```
 agents-roster                          open the panel (default)
+agents-roster --settings               open the panel and the Control Panel window
 agents-roster status [--dir D]         print the current snapshot as JSON
 agents-roster collect <Event> --dir D  Claude Code hook (reads JSON on stdin)
 agents-roster statusline --dir D       Claude Code statusline (reads JSON on stdin)
-agents-roster --version                print the release version
+agents-roster --version                print the release version and commit
+agents-roster about                    print authorship, license and provenance
 ```
 
 ## Environment variables

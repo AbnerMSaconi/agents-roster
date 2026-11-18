@@ -4,6 +4,7 @@
 //! agents-roster — floating panel and tray icon showing live Claude Code and agy agents.
 //!
 //!     agents-roster                               opens the panel (default)
+//!     agents-roster --settings                    opens the panel and the Control Panel window
 //!     agents-roster status [--dir D]              prints the current snapshot as JSON (diagnostics)
 //!     agents-roster collect <Event> --dir D       Claude Code hook (reads JSON from stdin)
 //!     agents-roster statusline --dir D            Claude Code statusline (reads JSON from stdin)
@@ -151,7 +152,7 @@ fn acquire_single_instance(dir: &Path) -> Option<std::fs::File> {
     }
 }
 
-fn run_gui(dir: PathBuf) -> Result<()> {
+fn run_gui(dir: PathBuf, open_settings: bool) -> Result<()> {
     let Some(_instance_lock) = acquire_single_instance(&dir) else {
         eprintln!("agents-roster: already running");
         return Ok(());
@@ -189,6 +190,7 @@ fn run_gui(dir: PathBuf) -> Result<()> {
         clock,
         fmt,
         tr,
+        open_settings,
     )?;
     Ok(())
 }
@@ -238,8 +240,9 @@ fn main() {
                 .join("\n");
             println!("{help}");
         }
-        None | Some("--dir") => {
-            if let Err(e) = run_gui(dir) {
+        None | Some("--dir" | "--settings") => {
+            let open_settings = args.iter().any(|a| a == "--settings");
+            if let Err(e) = run_gui(dir, open_settings) {
                 eprintln!("agents-roster: {e}");
                 std::process::exit(1);
             }

@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Version (`agents-roster --version`)
-      placeholder: "agents-roster 0.3.0"
+      placeholder: "agents-roster 0.3.1"
     validations:
       required: true
   - type: input

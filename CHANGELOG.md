@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Added `agents-roster --settings`, which opens the panel together with the Control Panel window (useful for screenshots, bug reports and desktops without a tray).
+
 ## 0.3.0 — 2026-11-17
 
 - Fixed "Always on top": it was on by default but never applied by the window manager until toggled by hand. It is now asserted when the window is mapped (normal start, tray start and when shown again).

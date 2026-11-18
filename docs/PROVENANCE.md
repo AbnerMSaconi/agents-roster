@@ -29,13 +29,13 @@ Releases carry up to three independent proofs. Check whichever you can:
 
 ```bash
 # 1. Integrity
-sha256sum -c agents-roster-0.3.0-linux-x86_64.tar.gz.sha256
+sha256sum -c agents-roster-0.3.1-linux-x86_64.tar.gz.sha256
 
 # 2. Built by this repository's workflow from a specific commit (Sigstore attestation)
-gh attestation verify agents-roster-0.3.0-linux-x86_64.tar.gz --repo AbnerMSaconi/agents-roster
+gh attestation verify agents-roster-0.3.1-linux-x86_64.tar.gz --repo AbnerMSaconi/agents-roster
 
 # 3. Signed with the project's own release key (works offline)
-scripts/verify-release.sh agents-roster-0.3.0-linux-x86_64.tar.gz
+scripts/verify-release.sh agents-roster-0.3.1-linux-x86_64.tar.gz
 ```
 
 The release key is separate from the author's personal commit-signing key and its private half

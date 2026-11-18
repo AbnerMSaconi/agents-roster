@@ -89,6 +89,7 @@ pub fn run_panel(
     clock: Arc<dyn Clock>,
     fmt: Arc<dyn TimeFormatter>,
     tr: PoTranslator,
+    open_settings: bool,
 ) -> Result<(), UiError> {
     x11_hints::configure_backend(initial.hide_from_taskbar);
     let panel = Panel::new()?;
@@ -142,6 +143,9 @@ pub fn run_panel(
         latest_agents,
         panel: panel.as_weak(),
     };
+    if open_settings {
+        let _ = tx.send(TrayCommand::OpenSettings);
+    }
     std::thread::Builder::new()
         .name("collector".into())
         .stack_size(512 * 1024)

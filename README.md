@@ -1,7 +1,7 @@
 # Agents Roster
 
 [![CI](https://github.com/AbnerMSaconi/agents-roster/actions/workflows/ci.yml/badge.svg)](https://github.com/AbnerMSaconi/agents-roster/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/release-0.3.0-blue)
+![version](https://img.shields.io/badge/release-0.3.1-blue)
 ![license](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
 A floating desktop panel and system-tray icon that shows, live, the AI coding agents running on your
@@ -11,6 +11,7 @@ machine: what each one is doing, what comes next, context usage, rate limits, an
 
 <p align="center">
   <img src="docs/screenshots/panel.png" alt="Agents Roster panel with three example agents" width="480">
+  <img src="docs/screenshots/settings-appearance.png" alt="Control Panel, Appearance tab" width="360">
 </p>
 
 <sub>Screenshot with example agents, taken in an isolated environment (no real sessions are shown).</sub>
@@ -33,7 +34,7 @@ machine: what each one is doing, what comes next, context usage, rate limits, an
 
 ```sh
 # From a release tarball (see the Releases page)
-tar xzf agents-roster-0.3.0-linux-x86_64.tar.gz && cd agents-roster-0.3.0-linux-x86_64
+tar xzf agents-roster-0.3.1-linux-x86_64.tar.gz && cd agents-roster-0.3.1-linux-x86_64
 ./install.sh
 
 # Or from source
@@ -41,7 +42,7 @@ git clone https://github.com/AbnerMSaconi/agents-roster.git && cd agents-roster
 ./packaging/install.sh
 
 agents-roster            # start the panel
-agents-roster --version  # 0.3.0
+agents-roster --version  # 0.3.1
 ```
 
 Then connect Claude Code through its hooks: see [docs/INSTALL.md](docs/INSTALL.md).
