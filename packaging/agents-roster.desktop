@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Agents Roster
+Comment=Live status, context usage, and rate limits for Claude Code and agy
+Exec=/usr/local/bin/agents-roster
+Icon=utilities-system-monitor
+Terminal=false
+Categories=Utility;Monitor;

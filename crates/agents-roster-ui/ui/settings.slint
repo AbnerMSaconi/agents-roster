@@ -1,0 +1,600 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 AbnerMSaconi
+
+// Lightweight Control Panel & Settings window styled after monitor-energia.
+import "../fonts/JetBrainsMono.ttf";
+
+export struct ServiceControlRow {
+    id: string,
+    label: string,
+    enabled: bool,
+    installed: bool,
+    detected-path: string,
+    process-name: string,
+    data-dir: string,
+    title-color: color,
+    builtin: bool,
+}
+
+export struct ItemColorRow {
+    key: string,
+    label: string,
+    color: color,
+    hex: string,
+    is-custom: bool,
+}
+
+component ToggleRow inherits Rectangle {
+    in property <string> label;
+    in property <bool> checked;
+    callback toggled();
+
+    height: 28px;
+    background: ta.has-hover ? #ffffff0d : transparent;
+    border-radius: 6px;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.toggled(); }
+    }
+
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        spacing: 10px;
+
+        Text {
+            text: label;
+            color: #e8e8e8;
+            font-size: 12px;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+
+        Rectangle {
+            width: 34px;
+            height: 18px;
+            y: (parent.height - self.height) / 2;
+            border-radius: 9px;
+            background: checked ? #4ea1ff : #32343d;
+            border-width: 1px;
+            border-color: checked ? #7abaff : #4b4e5a;
+
+            Rectangle {
+                width: 12px;
+                height: 12px;
+                border-radius: 6px;
+                y: 3px;
+                x: checked ? 19px : 3px;
+                background: #ffffff;
+            }
+        }
+    }
+}
+
+component ChipButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> active: false;
+    callback clicked();
+
+    height: 26px;
+    min-width: 48px;
+    background: active ? #4ea1ff33 : (ta.has-hover ? #ffffff18 : #23252d);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: active ? #4ea1ff : #ffffff20;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    Text {
+        text: root.text;
+        color: active ? #ffffff : #d0d3dc;
+        font-size: 11px;
+        font-weight: active ? 700 : 500;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+}
+
+component DarkInput inherits Rectangle {
+    in-out property <string> text;
+    in property <string> placeholder;
+    callback edited(string);
+
+    height: 24px;
+    border-radius: 5px;
+    background: #14161c;
+    border-width: 1px;
+    border-color: inp.has-focus ? #4ea1ff : #ffffff22;
+
+    inp := TextInput {
+        x: 6px;
+        y: 4px;
+        width: parent.width - 12px;
+        height: parent.height - 8px;
+        text <=> root.text;
+        color: #e8e8e8;
+        font-size: 11px;
+        vertical-alignment: center;
+        edited => { root.edited(self.text); }
+    }
+
+    if root.text == "" && placeholder != "": Text {
+        x: 6px;
+        text: placeholder;
+        color: #6b7080;
+        font-size: 10px;
+        vertical-alignment: center;
+    }
+}
+
+component ColorButton inherits Rectangle {
+    in property <string> label;
+    in property <color> swatch;
+    in property <string> hex;
+    in property <bool> selected: false;
+    callback clicked();
+
+    height: 28px;
+    background: selected ? #4ea1ff22 : (ta.has-hover ? #ffffff0c : #1d1f26);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: selected ? #4ea1ff : #ffffff18;
+
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        spacing: 8px;
+
+        Rectangle {
+            width: 16px;
+            height: 16px;
+            y: (parent.height - self.height) / 2;
+            border-radius: 4px;
+            background: swatch;
+            border-width: 1px;
+            border-color: #ffffff44;
+        }
+
+        Text {
+            text: label;
+            color: #e8e8e8;
+            font-size: 11px;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+        }
+
+        Text {
+            text: hex;
+            color: #8a8a8a;
+            font-size: 10px;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component OpacityStepper inherits HorizontalLayout {
+    in property <string> label;
+    in property <int> value;
+    callback changed(int);
+
+    spacing: 6px;
+    height: 26px;
+
+    Text {
+        text: label;
+        color: #c8ccd6;
+        font-size: 11px;
+        vertical-alignment: center;
+        horizontal-stretch: 1;
+    }
+    ChipButton { text: "-10"; width: 34px; clicked => { root.changed(max(0, value - 10)); } }
+    ChipButton { text: "-2"; width: 30px; clicked => { root.changed(max(0, value - 2)); } }
+    Text {
+        text: value + "%";
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 700;
+        width: 38px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    ChipButton { text: "+2"; width: 30px; clicked => { root.changed(min(100, value + 2)); } }
+    ChipButton { text: "+10"; width: 34px; clicked => { root.changed(min(100, value + 10)); } }
+}
+
+component RgbBar inherits HorizontalLayout {
+    in property <string> channel;
+    in property <int> value;
+    in property <color> bar-color;
+    callback changed(int);
+
+    spacing: 6px;
+    height: 22px;
+
+    Text { text: channel; color: #b8bcc8; font-size: 11px; font-weight: 700; width: 16px; vertical-alignment: center; }
+    ChipButton { text: "-15"; width: 34px; height: 22px; clicked => { root.changed(max(0, value - 15)); } }
+    Rectangle {
+        horizontal-stretch: 1;
+        height: 12px;
+        y: 5px;
+        border-radius: 4px;
+        background: #252730;
+        border-width: 1px;
+        border-color: #ffffff20;
+
+        Rectangle {
+            x: 0px;
+            y: 0px;
+            height: parent.height;
+            width: parent.width * (clamp(value, 0, 255) / 255);
+            border-radius: 4px;
+            background: bar-color;
+        }
+
+        TouchArea {
+            mouse-cursor: pointer;
+            clicked => { root.changed(round(clamp(self.mouse-x / parent.width, 0, 1) * 255)); }
+            moved => { if (self.pressed) { root.changed(round(clamp(self.mouse-x / parent.width, 0, 1) * 255)); } }
+        }
+    }
+    ChipButton { text: "+15"; width: 34px; height: 22px; clicked => { root.changed(min(255, value + 15)); } }
+    Text { text: value; color: #e8e8e8; font-size: 11px; width: 28px; horizontal-alignment: right; vertical-alignment: center; }
+}
+
+export component SettingsWindow inherits Window {
+    in-out property <int> active-tab: 0;
+    property <bool> confirm-reset: false;
+    in property <string> services-summary: "";
+    in property <string> legal-notice: "";
+
+    in property <bool> cfg-visible: true;
+    in property <bool> cfg-always-on-top: true;
+    in property <bool> cfg-skip-taskbar: true;
+    in property <int> cfg-interval-s: 2;
+
+    in property <[ServiceControlRow]> service-rows;
+    in-out property <string> new-label: "";
+    in-out property <string> new-process: "";
+    in-out property <string> new-data-dir: "";
+
+    in property <bool> os-on-started: true;
+    in property <bool> os-on-waiting: true;
+    in property <bool> os-on-finished: true;
+    in property <bool> os-on-error: true;
+    in property <bool> os-on-done-item: true;
+    in property <bool> os-on-context-high: true;
+    in property <bool> os-on-quota: true;
+    in property <bool> os-on-reminder: true;
+    in property <int> cfg-reminder-min: 15;
+
+    in property <color> th-bg-color: #141418;
+    in property <string> th-bg-hex: "#141418";
+    in property <int> th-bg-opacity: 88;
+    in property <color> th-border-color: #ffffff;
+    in property <string> th-border-hex: "#ffffff";
+    in property <int> th-border-opacity: 16;
+    in property <bool> th-blur-enabled: false;
+    in property <color> th-text-color: #e8e8e8;
+    in property <string> th-text-hex: "#e8e8e8";
+    in property <color> th-muted-color: #8a8a8a;
+    in property <string> th-muted-hex: "#8a8a8a";
+    in property <color> th-alert-color: #ffb347;
+    in property <string> th-alert-hex: "#ffb347";
+    in property <color> th-critical-color: #ff5c5c;
+    in property <string> th-critical-hex: "#ff5c5c";
+    in property <[ItemColorRow]> item-color-rows;
+
+    in property <string> active-color-target: "bg";
+    in property <string> active-color-label: "Widget background";
+    in property <color> active-color-preview: #141418;
+    in property <string> active-color-hex: "#141418";
+    in property <int> active-r: 20;
+    in property <int> active-g: 20;
+    in property <int> active-b: 24;
+    in property <[color]> palette-swatches;
+    in property <[string]> palette-hexes;
+
+    callback set-bool(string, bool);
+    callback set-int(string, int);
+    callback toggle-service(int, bool);
+    callback update-service-paths(int, string, string);
+    callback add-custom-service(string, string, string);
+    callback remove-service(int);
+    callback rescan-services();
+    callback select-color-target(string, string);
+    callback set-active-rgb(int, int, int);
+    callback set-active-hex(string);
+    callback clear-item-color(string);
+    callback apply-preset(string);
+    callback reset-defaults();
+    callback close-settings();
+
+    title: @tr("Agents Roster — Control Panel");
+    default-font-family: "JetBrains Mono";
+    background: #14161b;
+    width: 560px;
+    height: 700px;
+
+    VerticalLayout {
+        padding: 12px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            spacing: 8px;
+            Text {
+                text: @tr("CONTROL PANEL");
+                color: #ffffff;
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 1.2px;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+            Text { text: services-summary; color: #8a8a8a; font-size: 11px; vertical-alignment: center; }
+        }
+
+        HorizontalLayout {
+            spacing: 6px;
+            ChipButton { text: @tr("General"); active: active-tab == 0; horizontal-stretch: 1; clicked => { active-tab = 0; } }
+            ChipButton { text: @tr("AI Services"); active: active-tab == 1; horizontal-stretch: 1; clicked => { active-tab = 1; } }
+            ChipButton { text: @tr("Notifications"); active: active-tab == 2; horizontal-stretch: 1; clicked => { active-tab = 2; } }
+            ChipButton { text: @tr("Appearance"); active: active-tab == 3; horizontal-stretch: 1; clicked => { active-tab = 3; } }
+        }
+
+        Rectangle {
+            vertical-stretch: 1;
+            background: #191b22;
+            border-radius: 8px;
+            border-width: 1px;
+            border-color: #ffffff18;
+            clip: true;
+
+            Flickable {
+                width: parent.width;
+                height: parent.height;
+                content-height: tab-content.preferred-height + 16px;
+
+                tab-content := VerticalLayout {
+                    width: parent.width;
+                    padding: 12px;
+                    spacing: 8px;
+
+                    if active-tab == 0: VerticalLayout {
+                        spacing: 6px;
+                        Text { text: @tr("WINDOW & POLLING"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        ToggleRow { label: @tr("Show floating widget"); checked: cfg-visible; toggled => { root.set-bool("visible", !cfg-visible); } }
+                        ToggleRow { label: @tr("Always on top"); checked: cfg-always-on-top; toggled => { root.set-bool("always_on_top", !cfg-always-on-top); } }
+                        ToggleRow { label: @tr("Hide widget from taskbar"); checked: cfg-skip-taskbar; toggled => { root.set-bool("hide_from_taskbar", !cfg-skip-taskbar); } }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            height: 28px;
+                            Text { text: @tr("Update interval"); color: #e8e8e8; font-size: 12px; vertical-alignment: center; horizontal-stretch: 1; }
+                            ChipButton { text: "1s"; active: cfg-interval-s == 1; clicked => { root.set-int("interval_s", 1); } }
+                            ChipButton { text: "2s"; active: cfg-interval-s == 2; clicked => { root.set-int("interval_s", 2); } }
+                            ChipButton { text: "5s"; active: cfg-interval-s == 5; clicked => { root.set-int("interval_s", 5); } }
+                            ChipButton { text: "10s"; active: cfg-interval-s == 10; clicked => { root.set-int("interval_s", 10); } }
+                        }
+                    }
+
+                    if active-tab == 1: VerticalLayout {
+                        spacing: 6px;
+                        HorizontalLayout {
+                            spacing: 6px;
+                            Text { text: @tr("INSTALLED & CONFIGURED AI SERVICES"); color: #8a8a8a; font-size: 10px; font-weight: 700; vertical-alignment: center; horizontal-stretch: 1; }
+                            ChipButton { text: @tr("Rescan"); width: 72px; clicked => { root.rescan-services(); } }
+                        }
+
+                        for s[idx] in service-rows: Rectangle {
+                            background: #1d1f26;
+                            border-radius: 6px;
+                            border-width: 1px;
+                            border-color: #ffffff16;
+                            VerticalLayout {
+                                padding: 8px;
+                                spacing: 5px;
+                                HorizontalLayout {
+                                    spacing: 8px;
+                                    Rectangle { width: 10px; height: 10px; y: 4px; border-radius: 3px; background: s.title-color; border-width: 1px; border-color: #ffffff44; }
+                                    Text { text: s.label; color: s.title-color; font-size: 12px; font-weight: 700; vertical-alignment: center; horizontal-stretch: 1; }
+                                    Text { text: s.installed ? @tr("Installed") : @tr("Not found"); color: s.installed ? #50fa7b : #8a8a8a; font-size: 10px; vertical-alignment: center; }
+                                    ChipButton { text: s.enabled ? @tr("ON") : @tr("OFF"); active: s.enabled; width: 42px; height: 22px; clicked => { root.toggle-service(idx, !s.enabled); } }
+                                    if !s.builtin: ChipButton { text: @tr("Remove"); width: 64px; height: 22px; clicked => { root.remove-service(idx); } }
+                                }
+                                if s.detected-path != "": Text { text: s.detected-path; color: #8a8a8a; font-size: 10px; overflow: elide; }
+                                HorizontalLayout {
+                                    spacing: 6px;
+                                    Text { text: @tr("CLI"); color: #8a8a8a; font-size: 10px; width: 24px; vertical-alignment: center; }
+                                    cli-in := DarkInput { text: s.process-name; width: 96px; edited(v) => { root.update-service-paths(idx, v, dir-in.text); } }
+                                    Text { text: @tr("Path"); color: #8a8a8a; font-size: 10px; width: 32px; vertical-alignment: center; }
+                                    dir-in := DarkInput { text: s.data-dir; placeholder: "~/.agent-dir"; horizontal-stretch: 1; edited(v) => { root.update-service-paths(idx, cli-in.text, v); } }
+                                }
+                            }
+                        }
+
+                        Rectangle { height: 1px; background: #ffffff12; }
+                        Text { text: @tr("ADD CUSTOM AGENT SERVICE"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            DarkInput { text <=> new-label; placeholder: @tr("Name"); horizontal-stretch: 1; }
+                            DarkInput { text <=> new-process; placeholder: @tr("CLI bin"); width: 140px; }
+                        }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            DarkInput { text <=> new-data-dir; placeholder: @tr("Data dir path"); horizontal-stretch: 1; }
+                            ChipButton {
+                                text: @tr("+ Add");
+                                active: true;
+                                width: 80px;
+                                height: 24px;
+                                clicked => {
+                                    root.add-custom-service(new-label, new-process, new-data-dir);
+                                    new-label = "";
+                                    new-process = "";
+                                    new-data-dir = "";
+                                }
+                            }
+                        }
+                    }
+
+                    if active-tab == 2: VerticalLayout {
+                        spacing: 6px;
+                        Text { text: @tr("OS NOTIFICATIONS (UNCHECKED = WIDGET ONLY)"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        ToggleRow { label: @tr("Agent started working"); checked: os-on-started; toggled => { root.set-bool("os_on_started", !os-on-started); } }
+                        ToggleRow { label: @tr("Agent needs input / permission"); checked: os-on-waiting; toggled => { root.set-bool("os_on_waiting", !os-on-waiting); } }
+                        ToggleRow { label: @tr("Agent finished or exited"); checked: os-on-finished; toggled => { root.set-bool("os_on_finished", !os-on-finished); } }
+                        ToggleRow { label: @tr("Agent stopped with error"); checked: os-on-error; toggled => { root.set-bool("os_on_error", !os-on-error); } }
+                        ToggleRow { label: @tr("Milestones, commits & long replies"); checked: os-on-done-item; toggled => { root.set-bool("os_on_done_item", !os-on-done-item); } }
+                        ToggleRow { label: @tr("Context window high (>= 80%)"); checked: os-on-context-high; toggled => { root.set-bool("os_on_context_high", !os-on-context-high); } }
+                        ToggleRow { label: @tr("Usage limits & exhausted quotas"); checked: os-on-quota; toggled => { root.set-bool("os_on_quota", !os-on-quota); } }
+                        ToggleRow { label: @tr("Periodic reminder while working"); checked: os-on-reminder; toggled => { root.set-bool("os_on_reminder", !os-on-reminder); } }
+                        if os-on-reminder: HorizontalLayout {
+                            spacing: 6px;
+                            height: 28px;
+                            Text { text: @tr("Reminder interval"); color: #e8e8e8; font-size: 12px; vertical-alignment: center; horizontal-stretch: 1; }
+                            ChipButton { text: "5m"; active: cfg-reminder-min == 5; clicked => { root.set-int("reminder_min", 5); } }
+                            ChipButton { text: "10m"; active: cfg-reminder-min == 10; clicked => { root.set-int("reminder_min", 10); } }
+                            ChipButton { text: "15m"; active: cfg-reminder-min == 15; clicked => { root.set-int("reminder_min", 15); } }
+                            ChipButton { text: "30m"; active: cfg-reminder-min == 30; clicked => { root.set-int("reminder_min", 30); } }
+                            ChipButton { text: "60m"; active: cfg-reminder-min == 60; clicked => { root.set-int("reminder_min", 60); } }
+                        }
+                    }
+
+                    if active-tab == 3: VerticalLayout {
+                        spacing: 6px;
+                        Text { text: @tr("PRESETS"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            ChipButton { text: @tr("Dark"); horizontal-stretch: 1; clicked => { root.apply-preset("dark"); } }
+                            ChipButton { text: "Nord"; horizontal-stretch: 1; clicked => { root.apply-preset("nord"); } }
+                            ChipButton { text: "Dracula"; horizontal-stretch: 1; clicked => { root.apply-preset("dracula"); } }
+                            ChipButton { text: @tr("Amber"); horizontal-stretch: 1; clicked => { root.apply-preset("amber"); } }
+                            ChipButton { text: @tr("Contrast"); horizontal-stretch: 1; clicked => { root.apply-preset("contrast"); } }
+                            ChipButton { text: @tr("Glass"); horizontal-stretch: 1; clicked => { root.apply-preset("glass"); } }
+                        }
+
+                        Rectangle { height: 1px; background: #ffffff12; }
+                        Text { text: @tr("WIDGET BACKGROUND & BORDER"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        ColorButton { label: @tr("Widget background"); swatch: th-bg-color; hex: th-bg-hex; selected: active-color-target == "bg"; clicked => { root.select-color-target("bg", @tr("Widget background")); } }
+                        OpacityStepper { label: @tr("Widget opacity"); value: th-bg-opacity; changed(v) => { root.set-int("bg_opacity", v); } }
+                        ColorButton { label: @tr("Widget border"); swatch: th-border-color; hex: th-border-hex; selected: active-color-target == "border"; clicked => { root.select-color-target("border", @tr("Widget border")); } }
+                        OpacityStepper { label: @tr("Border opacity"); value: th-border-opacity; changed(v) => { root.set-int("border_opacity", v); } }
+
+                        Rectangle { height: 1px; background: #ffffff12; }
+                        Text { text: @tr("BLUR"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        ToggleRow { label: @tr("Blur effect (X11 compositor hint)"); checked: th-blur-enabled; toggled => { root.set-bool("blur_enabled", !th-blur-enabled); } }
+                        Text {
+                            text: @tr("Needs an X11 compositor with blur support (e.g. KWin) and widget opacity below 100%.");
+                            color: #6b7080;
+                            font-size: 10px;
+                            wrap: word-wrap;
+                        }
+
+                        Rectangle { height: 1px; background: #ffffff12; }
+                        Text { text: @tr("STATUS & TEXT COLORS"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            ColorButton { horizontal-stretch: 1; label: @tr("Normal"); swatch: th-text-color; hex: th-text-hex; selected: active-color-target == "text"; clicked => { root.select-color-target("text", @tr("Normal")); } }
+                            ColorButton { horizontal-stretch: 1; label: @tr("Muted"); swatch: th-muted-color; hex: th-muted-hex; selected: active-color-target == "muted"; clicked => { root.select-color-target("muted", @tr("Muted")); } }
+                        }
+                        HorizontalLayout {
+                            spacing: 6px;
+                            ColorButton { horizontal-stretch: 1; label: @tr("Alert"); swatch: th-alert-color; hex: th-alert-hex; selected: active-color-target == "alert"; clicked => { root.select-color-target("alert", @tr("Alert")); } }
+                            ColorButton { horizontal-stretch: 1; label: @tr("Critical"); swatch: th-critical-color; hex: th-critical-hex; selected: active-color-target == "critical"; clicked => { root.select-color-target("critical", @tr("Critical")); } }
+                        }
+
+                        Rectangle { height: 1px; background: #ffffff12; }
+                        Text { text: @tr("PER-AGENT NAME COLORS"); color: #8a8a8a; font-size: 10px; font-weight: 700; }
+                        for ic in item-color-rows: HorizontalLayout {
+                            spacing: 6px;
+                            height: 28px;
+                            Rectangle {
+                                horizontal-stretch: 1;
+                                background: active-color-target == ("item:" + ic.key) ? #4ea1ff22 : #1d1f26;
+                                border-radius: 6px;
+                                border-width: 1px;
+                                border-color: active-color-target == ("item:" + ic.key) ? #4ea1ff : #ffffff18;
+
+                                TouchArea { mouse-cursor: pointer; clicked => { root.select-color-target("item:" + ic.key, ic.label); } }
+                                HorizontalLayout {
+                                    padding-left: 8px;
+                                    padding-right: 8px;
+                                    spacing: 8px;
+                                    Rectangle { width: 16px; height: 16px; y: (parent.height - self.height) / 2; border-radius: 4px; background: ic.color; border-width: 1px; border-color: #ffffff44; }
+                                    Text { text: ic.label; color: ic.color; font-size: 12px; font-weight: 700; vertical-alignment: center; horizontal-stretch: 1; }
+                                    Text { text: ic.hex; color: #8a8a8a; font-size: 10px; vertical-alignment: center; }
+                                }
+                            }
+                            if ic.is-custom: ChipButton { text: @tr("Clear"); width: 58px; clicked => { root.clear-item-color(ic.key); } }
+                        }
+                    }
+                }
+            }
+        }
+
+        if active-tab == 3: Rectangle {
+        background: #14161c;
+        border-radius: 8px;
+        border-width: 1px;
+        border-color: #4ea1ff66;
+
+        VerticalLayout {
+            padding: 10px;
+            spacing: 6px;
+
+            HorizontalLayout {
+                spacing: 8px;
+                Rectangle { width: 18px; height: 18px; border-radius: 4px; background: active-color-preview; border-width: 1px; border-color: #ffffff55; }
+                Text { text: @tr("Editing:") + " " + active-color-label; color: #ffffff; font-size: 11px; font-weight: 700; vertical-alignment: center; horizontal-stretch: 1; }
+                Text { text: active-color-hex; color: #8a8a8a; font-size: 11px; vertical-alignment: center; }
+            }
+
+            HorizontalLayout {
+                spacing: 4px;
+                for idx in 16: Rectangle {
+                    horizontal-stretch: 1;
+                    height: 18px;
+                    border-radius: 4px;
+                    background: palette-swatches[idx];
+                    border-width: 1px;
+                    border-color: #ffffff38;
+                    TouchArea { mouse-cursor: pointer; clicked => { root.set-active-hex(palette-hexes[idx]); } }
+                }
+            }
+
+            RgbBar { channel: "R"; value: active-r; bar-color: #ff5c5c; changed(v) => { root.set-active-rgb(v, active-g, active-b); } }
+            RgbBar { channel: "G"; value: active-g; bar-color: #50fa7b; changed(v) => { root.set-active-rgb(active-r, v, active-b); } }
+            RgbBar { channel: "B"; value: active-b; bar-color: #4ea1ff; changed(v) => { root.set-active-rgb(active-r, active-g, v); } }
+        }
+    }
+
+        HorizontalLayout {
+            spacing: 8px;
+            ChipButton {
+                text: confirm-reset ? @tr("Click again to confirm") : @tr("Reset defaults");
+                active: confirm-reset;
+                width: 190px;
+                clicked => {
+                    if (confirm-reset) { root.reset-defaults(); confirm-reset = false; } else { confirm-reset = true; }
+                }
+            }
+            Text {
+                text: legal-notice;
+                color: #5f6472;
+                font-size: 10px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+            ChipButton { text: @tr("Close"); active: true; width: 90px; clicked => { root.close-settings(); } }
+        }
+    }
+}

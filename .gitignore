@@ -1,0 +1,45 @@
+# Build output
+/target/
+/dist/
+**/*.rs.bk
+
+# Secrets / local environment
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials*.json
+secrets.*
+
+# Local runtime data (never commit real session data, logs or user config)
+*.log
+!crates/agents-roster-sources/tests/fixtures/*.log
+*.sqlite
+*.db
+*.pid
+config.toml
+/run/
+.agents-roster/
+
+# Claude Code / AI tooling local state
+.claude/
+CLAUDE.local.md
+.worktrees/
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Profiling / dumps
+perf.data*
+flamegraph.svg
+core
+core.*

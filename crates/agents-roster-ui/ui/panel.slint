@@ -1,0 +1,184 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 AbnerMSaconi
+
+// Floating agents-roster — same visual style as the energy monitor:
+// translucent #141418 background, 16% white border, monospace font, #e8e8e8 / #ffb347 / #ff5c5c / #8a8a8a palette.
+import "../fonts/JetBrainsMono.ttf";
+import { ItemColorRow, ServiceControlRow, SettingsWindow } from "settings.slint";
+export { ItemColorRow, ServiceControlRow, SettingsWindow }
+
+export struct AgentUi {
+    key: string,
+    depth: int,
+    title: string,
+    title-color: color,
+    model: string,
+    state: string,
+    state-color: color,
+    ctx: string,
+    ctx-color: color,
+    now: string,
+    next: string,
+    done: string,
+    reason: string,
+    reason-color: color,
+}
+
+export struct FooterLine {
+    text: string,
+    color: color,
+}
+
+export global Colors {
+    in-out property <color> bg: #141418e1;
+    in-out property <color> border: #ffffff28;
+    in-out property <color> text: #e8e8e8;
+    in-out property <color> alert: #ffb347;
+    in-out property <color> critical: #ff5c5c;
+    in-out property <color> muted: #8a8a8a;
+}
+
+component Row inherits HorizontalLayout {
+    in property <string> label;
+    in property <string> value;
+    in property <color> color: Colors.text;
+    spacing: 8px;
+    Text { text: label; color: Colors.muted; font-size: 11px; width: 100px; }
+    Text { text: value; color: color; font-size: 12px; overflow: elide; horizontal-stretch: 1; }
+}
+
+export component Panel inherits Window {
+    in property <[AgentUi]> agents;
+    in property <[FooterLine]> footers;
+    in property <bool> keep-on-top: true;
+    in property <bool> reminders: true;
+    callback drag(length, length);
+    callback drop-window();
+    callback open-agent(string);
+    callback toggle-visible();
+    callback toggle-top();
+    callback toggle-reminders();
+    callback open-settings();
+    callback quit();
+
+    title: @tr("Agents");
+    no-frame: true;
+    always-on-top: keep-on-top;
+    background: transparent;
+    default-font-family: "JetBrains Mono";
+    width: 480px;
+    height: body.preferred-height;
+
+    ContextMenuArea {
+        Menu {
+            MenuItem { title: @tr("Control Panel..."); activated => { root.open-settings(); } }
+            MenuItem { title: @tr("Hide"); activated => { root.toggle-visible(); } }
+            MenuItem { title: keep-on-top ? @tr("✓ Always on top") : @tr("Always on top"); activated => { root.toggle-top(); } }
+            MenuItem { title: reminders ? @tr("✓ Reminders while working") : @tr("Reminders while working"); activated => { root.toggle-reminders(); } }
+            MenuItem { title: @tr("Quit"); activated => { root.quit(); } }
+        }
+
+        Rectangle {
+            background: Colors.bg;
+            border-radius: 10px;
+            border-width: 1px;
+            border-color: Colors.border;
+
+            TouchArea {
+                mouse-cursor: move;
+                moved => {
+                    if (self.pressed) {
+                        root.drag(self.mouse-x - self.pressed-x, self.mouse-y - self.pressed-y);
+                    }
+                }
+                pointer-event(e) => {
+                    if (e.kind == PointerEventKind.up && e.button == PointerEventButton.left) {
+                        root.drop-window();
+                    }
+                }
+            }
+
+            body := VerticalLayout {
+                padding-left: 14px;
+                padding-right: 14px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                spacing: 8px;
+
+                HorizontalLayout {
+                    Text { text: @tr("AGENTS"); color: Colors.muted; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+                }
+
+                if agents.length == 0: Text {
+                    text: @tr("No active agents running.");
+                    color: Colors.muted;
+                    font-size: 12px;
+                }
+
+                for a in agents: Rectangle {
+                    border-radius: 6px;
+                    background: card-ta.has-hover ? #ffffff0d : (a.depth > 0 ? #ffffff06 : transparent);
+
+                    card-ta := TouchArea {
+                        property <bool> dragging: false;
+                        mouse-cursor: self.dragging ? MouseCursor.move : MouseCursor.pointer;
+                        moved => {
+                            if (self.pressed && (self.dragging || abs(self.mouse-x - self.pressed-x) > 4px || abs(self.mouse-y - self.pressed-y) > 4px)) {
+                                self.dragging = true;
+                                root.drag(self.mouse-x - self.pressed-x, self.mouse-y - self.pressed-y);
+                            }
+                        }
+                        pointer-event(e) => {
+                            if (e.kind == PointerEventKind.down && e.button == PointerEventButton.left) {
+                                self.dragging = false;
+                            } else if (e.kind == PointerEventKind.up && e.button == PointerEventButton.left) {
+                                if (self.dragging) {
+                                    self.dragging = false;
+                                    root.drop-window();
+                                } else {
+                                    root.open-agent(a.key);
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        padding-left: a.depth > 1 ? 24px : (a.depth > 0 ? 12px : 4px);
+                        padding-right: 4px;
+                        padding-top: 2px;
+                        padding-bottom: 2px;
+                        spacing: a.depth > 0 ? 6px : 0px;
+
+                        if a.depth > 0: Rectangle {
+                            width: 2px;
+                            border-radius: 1px;
+                            background: a.state-color;
+                            opacity: 0.45;
+                        }
+
+                        VerticalLayout {
+                            horizontal-stretch: 1;
+                            spacing: 1px;
+                            HorizontalLayout {
+                                spacing: 8px;
+                                if a.depth > 0: Text { text: "↳"; color: Colors.muted; font-size: 11px; vertical-alignment: center; }
+                                Text { text: "●"; color: a.state-color; font-size: 12px; vertical-alignment: center; }
+                                Text { text: a.title; color: a.title-color; font-size: a.depth > 0 ? 12px : 13px; font-weight: 600; overflow: elide; horizontal-stretch: 1; }
+                                Text { text: a.model; color: Colors.muted; font-size: 11px; vertical-alignment: center; }
+                                Text { text: a.ctx; color: a.ctx-color; font-size: 11px; vertical-alignment: center; }
+                            }
+                            Row { label: a.state; value: a.now; color: a.state-color; }
+                            if a.reason != "": Row { label: ""; value: a.reason; color: a.reason-color; }
+                            if a.next != "": Row { label: @tr("next"); value: a.next; }
+                            if a.done != "": Row { label: @tr("done"); value: a.done; color: Colors.muted; }
+                        }
+                    }
+                }
+
+                Rectangle { height: 1px; background: Colors.border; }
+
+                for f in footers: Text { text: f.text; color: f.color; font-size: 11px; overflow: elide; }
+            }
+        }
+    }
+}

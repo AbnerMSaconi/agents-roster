@@ -1,0 +1,491 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: agents-roster\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Agents"
+msgstr "Agentes"
+
+msgid "AGENTS"
+msgstr "AGENTES"
+
+msgid "No active agents running."
+msgstr "Nenhum agente ativo no momento."
+
+msgid "next"
+msgstr "a seguir"
+
+msgid "done"
+msgstr "feito"
+
+msgid "Hide"
+msgstr "Esconder"
+
+msgid "Always on top"
+msgstr "Sempre no topo"
+
+msgid "✓ Always on top"
+msgstr "✓ Sempre no topo"
+
+msgid "Reminders while working"
+msgstr "Lembretes enquanto trabalham"
+
+msgid "✓ Reminders while working"
+msgstr "✓ Lembretes enquanto trabalham"
+
+msgid "Quit"
+msgstr "Sair"
+
+msgid "Show/hide"
+msgstr "Mostrar/esconder"
+
+msgid "working"
+msgstr "trabalhando"
+
+msgid "waiting for you"
+msgstr "esperando você"
+
+msgid "idle"
+msgstr "ocioso"
+
+msgid "stopped"
+msgstr "parou"
+
+msgid "stopped with error"
+msgstr "parou com erro"
+
+msgid "Sun"
+msgstr "dom"
+
+msgid "Mon"
+msgstr "seg"
+
+msgid "Tue"
+msgstr "ter"
+
+msgid "Wed"
+msgstr "qua"
+
+msgid "Thu"
+msgstr "qui"
+
+msgid "Fri"
+msgstr "sex"
+
+msgid "Sat"
+msgstr "sáb"
+
+msgid "waiting for a background task"
+msgstr "esperando uma tarefa em segundo plano"
+
+msgid "background task: {action}"
+msgstr "tarefa em segundo plano: {action}"
+
+msgid "reading {file}"
+msgstr "lendo {file}"
+
+msgid "writing {file}"
+msgstr "escrevendo {file}"
+
+msgid "editing {file}"
+msgstr "editando {file}"
+
+msgid "searching \"{pattern}\""
+msgstr "buscando \"{pattern}\""
+
+msgid "finding {pattern}"
+msgstr "procurando {pattern}"
+
+msgid "web search \"{query}\""
+msgstr "pesquisando \"{query}\""
+
+msgid "fetching {url}"
+msgstr "abrindo {url}"
+
+msgid "subagent: {desc}"
+msgstr "subagente: {desc}"
+
+msgid "updating task list"
+msgstr "atualizando a lista de tarefas"
+
+msgid "skill {name}"
+msgstr "skill {name}"
+
+msgid "asking you"
+msgstr "perguntando a você"
+
+msgid "publishing artifact"
+msgstr "publicando artefato"
+
+msgid "session opened"
+msgstr "sessão aberta"
+
+msgid "request: {prompt}"
+msgstr "pedido: {prompt}"
+
+msgid "task: {text}"
+msgstr "tarefa: {text}"
+
+msgid "compacting context"
+msgstr "compactando o contexto"
+
+msgid "replied: {text}"
+msgstr "respondeu: {text}"
+
+msgid "session closed"
+msgstr "sessão encerrada"
+
+msgid "process exited"
+msgstr "processo encerrado"
+
+msgid "no activity for {dur}"
+msgstr "sem atividade há {dur}"
+
+msgid "agy quota exhausted · resets {when}"
+msgstr "cota do agy esgotada · volta {when}"
+
+msgid "finished: {text}"
+msgstr "concluiu: {text}"
+
+msgid "commit: {subject}"
+msgstr "commit: {subject}"
+
+msgid "{text} · {dur} ago"
+msgstr "{text} · há {dur}"
+
+msgid "{name} {pct}% · resets {when}"
+msgstr "{name} {pct}% · zera {when}"
+
+msgid "Claude  limits appear after the next Claude Code response"
+msgstr "Claude  limites aparecem após a próxima resposta do Claude Code"
+
+msgid "{provider}     a quota ran out at {at} · resets {when} (other models continue)"
+msgstr "{provider}     uma cota esgotou às {at} · volta {when} (outros modelos seguem)"
+
+msgid "{provider}     {model} 0% · out at {at} · resets {when}"
+msgstr "{provider}     {model} 0% · esgotou {at} · volta {when}"
+
+msgid "{provider}     quota ok ({provider} only reports when exhausted)"
+msgstr "{provider}     cota ok ({provider} só avisa quando acaba)"
+
+msgid "no active agents"
+msgstr "nenhum agente ativo"
+
+msgid "{title} started"
+msgstr "{title} começou"
+
+msgid "{title} finished"
+msgstr "{title} concluiu"
+
+msgid "{title} needs you"
+msgstr "{title} precisa de você"
+
+msgid "{title} stopped"
+msgstr "{title} parou"
+
+msgid "{title} ended"
+msgstr "{title} terminou"
+
+msgid "{title}: context at {pct}%"
+msgstr "{title}: contexto em {pct}%"
+
+msgid "Near the limit: the agent will compact or lose old details."
+msgstr "Perto do limite: o agente vai compactar ou perder detalhes antigos."
+
+msgid "{provider}: {window} limit at {pct}%"
+msgstr "{provider}: limite de {window} em {pct}%"
+
+msgid "5 hours"
+msgstr "5 horas"
+
+msgid "7 days"
+msgstr "7 dias"
+
+msgid "Resets to zero {when}."
+msgstr "Volta a zero {when}."
+
+msgid "{provider} quota exhausted"
+msgstr "Cota de {provider} esgotada"
+
+msgid "{provider} · {model} quota exhausted"
+msgstr "{provider} · cota de {model} esgotada"
+
+msgid "The active model stops until {when}. Other {provider} models can continue."
+msgstr "O modelo em uso para até {when}. Outros modelos de {provider} podem continuar."
+
+msgid "1 agent working"
+msgstr "1 agente trabalhando"
+
+msgid "{n} agents working"
+msgstr "{n} agentes trabalhando"
+
+msgid "subagent running"
+msgstr "subagente em execução"
+
+msgid "waiting on swarm board"
+msgstr "aguardando no quadro swarm"
+
+msgid "running in terminal"
+msgstr "executando no terminal"
+
+msgid "Settings..."
+msgstr "Configurações..."
+
+msgid "Agents Roster — Control Center"
+msgstr "Painel de Agentes — Central de Controle"
+
+msgid "AI Services"
+msgstr "Serviços de IA"
+
+msgid "Notifications"
+msgstr "Notificações"
+
+msgid "Appearance"
+msgstr "Aparência"
+
+msgid "Detected coding agents & custom directories:"
+msgstr "Agentes de programação detectados e diretórios personalizados:"
+
+msgid "Rescan"
+msgstr "Reescanear"
+
+msgid "Installed"
+msgstr "Instalado"
+
+msgid "Not found"
+msgstr "Não encontrado"
+
+msgid "Remove"
+msgstr "Remover"
+
+msgid "CLI:"
+msgstr "CLI:"
+
+msgid "Path:"
+msgstr "Caminho:"
+
+msgid "Color:"
+msgstr "Cor:"
+
+msgid "Add custom programming agent service"
+msgstr "Adicionar serviço de agente personalizado"
+
+msgid "Name (e.g. Goose)"
+msgstr "Nome (ex.: Goose)"
+
+msgid "CLI / bin"
+msgstr "CLI / binário"
+
+msgid "Installed dir path"
+msgstr "Caminho do diretório instalado"
+
+msgid "Add"
+msgstr "Adicionar"
+
+msgid "Checked = send OS desktop popup · Unchecked = keep only inside widget"
+msgstr "Marcado = notificação no SO · Desmarcado = exibir apenas no widget"
+
+msgid "Agent started working"
+msgstr "Agente começou a trabalhar"
+
+msgid "Agent needs input / permission"
+msgstr "Agente precisa de entrada / permissão"
+
+msgid "Agent finished or exited"
+msgstr "Agente concluiu ou encerrou"
+
+msgid "Agent stopped with error"
+msgstr "Agente parou com erro"
+
+msgid "Milestones, commits, and long replies"
+msgstr "Marcos, commits e respostas longas"
+
+msgid "Context window high (>= 80%)"
+msgstr "Janela de contexto alta (>= 80%)"
+
+msgid "Usage limits & exhausted quotas"
+msgstr "Limites de uso e cotas esgotadas"
+
+msgid "Periodic working reminder (minutes):"
+msgstr "Lembrete periódico enquanto trabalha (minutos):"
+
+msgid "Background color"
+msgstr "Cor de fundo"
+
+msgid "Background opacity"
+msgstr "Opacidade do fundo"
+
+msgid "Border color"
+msgstr "Cor da borda"
+
+msgid "Border opacity"
+msgstr "Opacidade da borda"
+
+msgid "Primary text"
+msgstr "Texto principal"
+
+msgid "Muted labels"
+msgstr "Rótulos secundários"
+
+msgid "Waiting / alert"
+msgstr "Aguardando / alerta"
+
+msgid "Critical / error"
+msgstr "Crítico / erro"
+
+msgid "Compositor blur behind widget (KDE / X11)"
+msgstr "Efeito blur atrás do widget (KDE / X11)"
+
+msgid "Hide widget from taskbar & pager"
+msgstr "Ocultar widget da barra de tarefas e áreas de trabalho"
+
+msgid "Reset default colors"
+msgstr "Restaurar cores padrão"
+
+msgid "Close"
+msgstr "Fechar"
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "Save & Close"
+msgstr "Salvar e Fechar"
+
+msgid "PREVIEW"
+msgstr "PRÉVIA"
+
+msgid "Control Panel..."
+msgstr "Painel de Controle..."
+
+msgid "CONTROL PANEL"
+msgstr "PAINEL DE CONTROLE"
+
+msgid "Agents Roster — Control Panel"
+msgstr "Painel de Agentes — Painel de Controle"
+
+msgid "Colors & Blur"
+msgstr "Cores e Blur"
+
+msgid "WINDOW & POLLING"
+msgstr "JANELA E ATUALIZAÇÃO"
+
+msgid "Show floating widget"
+msgstr "Exibir widget flutuante"
+
+msgid "Hide widget from taskbar"
+msgstr "Ocultar widget da barra de tarefas"
+
+msgid "Update interval"
+msgstr "Intervalo de atualização"
+
+msgid "INSTALLED & CONFIGURED AI SERVICES"
+msgstr "SERVIÇOS DE IA INSTALADOS E CONFIGURADOS"
+
+msgid "ON"
+msgstr "AT"
+
+msgid "OFF"
+msgstr "DES"
+
+msgid "CLI"
+msgstr "CLI"
+
+msgid "Path"
+msgstr "Caminho"
+
+msgid "ADD CUSTOM AGENT SERVICE"
+msgstr "ADICIONAR SERVIÇO DE AGENTE PERSONALIZADO"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "Data dir path"
+msgstr "Caminho dos dados"
+
+msgid "+ Add"
+msgstr "+ Adicionar"
+
+msgid "OS NOTIFICATIONS (UNCHECKED = WIDGET ONLY)"
+msgstr "NOTIFICAÇÕES NO SO (DESMARCADO = SOMENTE NO WIDGET)"
+
+msgid "Periodic reminder while working"
+msgstr "Lembrete periódico enquanto trabalha"
+
+msgid "Reminder interval"
+msgstr "Intervalo do lembrete"
+
+msgid "PRESETS"
+msgstr "TEMAS PRONTOS"
+
+msgid "Dark"
+msgstr "Escuro"
+
+msgid "Amber"
+msgstr "Âmbar"
+
+msgid "Contrast"
+msgstr "Contraste"
+
+msgid "Glass"
+msgstr "Vidro"
+
+msgid "WIDGET BACKGROUND, TRANSPARENCY & BLUR"
+msgstr "FUNDO DO WIDGET, TRANSPARÊNCIA E BLUR"
+
+msgid "Widget background"
+msgstr "Fundo do widget"
+
+msgid "Widget opacity"
+msgstr "Opacidade do widget"
+
+msgid "Widget border"
+msgstr "Borda do widget"
+
+msgid "Blur effect (X11 compositor hint)"
+msgstr "Efeito blur (compositor X11)"
+
+msgid "STATUS & TEXT COLORS"
+msgstr "CORES DE STATUS E TEXTO"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Muted"
+msgstr "Secundário"
+
+msgid "Alert"
+msgstr "Alerta"
+
+msgid "Critical"
+msgstr "Crítico"
+
+msgid "PER-AGENT NAME COLORS"
+msgstr "COR DO NOME DE CADA AGENTE"
+
+msgid "Clear"
+msgstr "Limpar"
+
+msgid "Editing:"
+msgstr "Editando:"
+
+msgid "Reset defaults"
+msgstr "Restaurar padrão"
+
+msgid "General"
+msgstr "Geral"
+
+msgid "WIDGET BACKGROUND & BORDER"
+msgstr "FUNDO E BORDA DO WIDGET"
+
+msgid "BLUR"
+msgstr "BLUR"
+
+msgid "Needs an X11 compositor with blur support (e.g. KWin) and widget opacity below 100%."
+msgstr "Requer compositor X11 com suporte a blur (ex.: KWin) e opacidade do widget abaixo de 100%."
+
+msgid "Click again to confirm"
+msgstr "Clique de novo para confirmar"

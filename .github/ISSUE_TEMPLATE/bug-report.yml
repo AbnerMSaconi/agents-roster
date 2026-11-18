@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in agents-roster does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you start, run `agents-roster status` and paste its output below.
+  - type: input
+    id: version
+    attributes:
+      label: Version (`agents-roster --version`)
+      placeholder: "agents-roster 0.3.0"
+    validations:
+      required: true
+  - type: input
+    id: session
+    attributes:
+      label: Session type (`echo $XDG_SESSION_TYPE`)
+      placeholder: "x11 / wayland"
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution and desktop environment
+      placeholder: "Ubuntu 24.04 / KDE Plasma 6"
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: Output of `agents-roster status`
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
