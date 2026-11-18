@@ -9,6 +9,12 @@ machine: what each one is doing, what comes next, context usage, rate limits, an
 
 [![Made with Slint](https://raw.githubusercontent.com/slint-ui/slint/master/logo/MadeWithSlint-logo-whitebg.png)](https://slint.dev)
 
+<p align="center">
+  <img src="docs/screenshots/panel.png" alt="Agents Roster panel with three example agents" width="480">
+</p>
+
+<sub>Screenshot with example agents, taken in an isolated environment (no real sessions are shown).</sub>
+
 ## Features
 
 - **Live process tracking** — only agents that are actually running appear; closed or crashed sessions
