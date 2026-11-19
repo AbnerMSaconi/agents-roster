@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 AbnerMSaconi
 
-//! KDE SNI tray icon with 32x32 working-agent counter and context menu.
+//! Tray icon shared state: 32x32 working-agent counter badge and command channel.
+//!
+//! The platform backends (`tray_linux.rs` SNI / `tray_win.rs` Win32) render this state and
+//! expose a uniform [`TrayHandle`] with `update(|state| ...)`.
 
 use std::sync::Arc;
 use std::sync::mpsc::Sender;
 
 use agents_roster_core::{PanelSettings, Translator};
-use ksni::menu::{CheckmarkItem, StandardItem};
-use ksni::{Icon, MenuItem, ToolTip};
+
+pub use crate::tray_platform::{TrayHandle, spawn_tray};
 
 /// Actions triggered from the tray icon or panel context menu.
 #[derive(Debug, Clone)]
@@ -21,7 +24,7 @@ pub enum TrayCommand {
     Quit,
 }
 
-/// SNI tray icon state managed by `ksni`.
+/// Platform-neutral tray icon state.
 pub struct TrayIcon {
     pub tx: Sender<TrayCommand>,
     pub tr: Arc<dyn Translator>,
@@ -32,81 +35,11 @@ pub struct TrayIcon {
     pub reminders: bool,
 }
 
-impl ksni::Tray for TrayIcon {
-    fn id(&self) -> String {
-        "agents-roster".into()
-    }
-
-    fn title(&self) -> String {
-        self.tr.translate("Agents").into_owned()
-    }
-
-    fn icon_pixmap(&self) -> Vec<Icon> {
-        vec![render_icon(self.working_count, self.color)]
-    }
-
-    fn tool_tip(&self) -> ToolTip {
-        ToolTip {
-            title: self.tr.translate("Agents").into_owned(),
-            description: self.lines.join("\n"),
-            icon_name: String::new(),
-            icon_pixmap: Vec::new(),
-        }
-    }
-
-    fn activate(&mut self, _x: i32, _y: i32) {
-        let _ = self.tx.send(TrayCommand::ToggleVisible);
-    }
-
-    fn menu(&self) -> Vec<MenuItem<Self>> {
-        vec![
-            StandardItem {
-                label: self.tr.translate("Show/hide").into_owned(),
-                activate: Box::new(|t: &mut Self| {
-                    let _ = t.tx.send(TrayCommand::ToggleVisible);
-                }),
-                ..Default::default()
-            }
-            .into(),
-            CheckmarkItem {
-                label: self.tr.translate("Always on top").into_owned(),
-                checked: self.always_on_top,
-                activate: Box::new(|t: &mut Self| {
-                    t.always_on_top = !t.always_on_top;
-                    let _ = t.tx.send(TrayCommand::AlwaysOnTop(t.always_on_top));
-                }),
-                ..Default::default()
-            }
-            .into(),
-            CheckmarkItem {
-                label: self.tr.translate("Reminders while working").into_owned(),
-                checked: self.reminders,
-                activate: Box::new(|t: &mut Self| {
-                    t.reminders = !t.reminders;
-                    let _ = t.tx.send(TrayCommand::Reminders(t.reminders));
-                }),
-                ..Default::default()
-            }
-            .into(),
-            MenuItem::Separator,
-            StandardItem {
-                label: self.tr.translate("Control Panel...").into_owned(),
-                activate: Box::new(|t: &mut Self| {
-                    let _ = t.tx.send(TrayCommand::OpenSettings);
-                }),
-                ..Default::default()
-            }
-            .into(),
-            StandardItem {
-                label: self.tr.translate("Quit").into_owned(),
-                activate: Box::new(|t: &mut Self| {
-                    let _ = t.tx.send(TrayCommand::Quit);
-                }),
-                ..Default::default()
-            }
-            .into(),
-        ]
-    }
+/// A rendered 32x32 ARGB pixmap (premultiplied-free, straight alpha).
+pub struct IconData {
+    pub width: i32,
+    pub height: i32,
+    pub data: Vec<u8>,
 }
 
 /// 3x5 bitmap digits (bit 2 = left column).
@@ -143,7 +76,7 @@ fn paint_digit(px: &mut [[u8; 4]], size: usize, digit: u8, x0: usize, y0: usize,
 }
 
 /// Renders a 32x32 ARGB rounded dark badge displaying `n` working agents.
-pub fn render_icon(n: usize, color: [u8; 3]) -> Icon {
+pub fn render_icon(n: usize, color: [u8; 3]) -> IconData {
     const SIZE: usize = 32;
     let mut px = vec![[0u8; 4]; SIZE * SIZE];
     for y in 0..SIZE {
@@ -158,7 +91,7 @@ pub fn render_icon(n: usize, color: [u8; 3]) -> Icon {
     let x0 = (SIZE - 3 * 4) / 2;
     let y0 = (SIZE - 5 * 4) / 2;
     paint_digit(&mut px, SIZE, digit, x0, y0, color);
-    Icon {
+    IconData {
         width: SIZE as i32,
         height: SIZE as i32,
         data: px.into_iter().flatten().collect(),

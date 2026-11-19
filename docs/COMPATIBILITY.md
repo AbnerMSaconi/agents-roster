@@ -15,6 +15,8 @@ setup, please open an issue with the result so this table can grow.
 
 ## Expected, not yet tested
 
+- Windows 11 x86_64 (Win32 process inspection, notification-area tray, DWM hints, and WinRT toasts are implemented; no Windows runner or physical-device validation has been recorded for this snapshot).
+
 - Other glibc distributions (Debian, Ubuntu, Fedora, Arch, openSUSE, …) with the runtime libraries from
   [INSTALL](INSTALL.md#1-requirements).
 - Other desktops with a StatusNotifierItem tray and freedesktop notifications: XFCE, Cinnamon, MATE, LXQt.
@@ -24,7 +26,7 @@ setup, please open an issue with the result so this table can grow.
 
 ## Not supported
 
-- macOS and Windows (the app reads `/proc` and uses D-Bus and X11/Wayland).
+- macOS (no backend is implemented).
 - Headless servers.
 - musl-based systems have not been tried.
 
@@ -46,6 +48,10 @@ setup, please open an issue with the result so this table can grow.
 | agy (Antigravity CLI) | Process, presence locks, transcripts | State, tool, commits, context, exhausted-quota notices, subagents |
 | Codex CLI | Process + transcripts | State, context, subagents |
 | OpenCode, Gemini CLI, others | Process name + data directory | Presence only (custom services) |
+
+## Windows notes
+
+The Windows backend targets 64-bit Windows 11. Process command-line and working-directory inspection reads the target process PEB and may be unavailable for elevated or protected processes. See [Windows installation](INSTALL-WINDOWS.md) for build and troubleshooting steps.
 
 ## Install layouts
 

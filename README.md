@@ -1,7 +1,7 @@
 # Agents Roster
 
 [![CI](https://github.com/AbnerMSaconi/agents-roster/actions/workflows/ci.yml/badge.svg)](https://github.com/AbnerMSaconi/agents-roster/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/release-0.3.1-blue)
+![version](https://img.shields.io/badge/release-0.4.0-blue)
 ![license](https://img.shields.io/badge/license-AGPL--3.0-blue)
 
 A floating desktop panel and system-tray icon that shows, live, the AI coding agents running on your
@@ -34,7 +34,7 @@ machine: what each one is doing, what comes next, context usage, rate limits, an
 
 ```sh
 # From a release tarball (see the Releases page)
-tar xzf agents-roster-0.3.1-linux-x86_64.tar.gz && cd agents-roster-0.3.1-linux-x86_64
+tar xzf agents-roster-0.4.0-linux-x86_64.tar.gz && cd agents-roster-0.4.0-linux-x86_64
 ./install.sh
 
 # Or from source
@@ -42,16 +42,20 @@ git clone https://github.com/AbnerMSaconi/agents-roster.git && cd agents-roster
 ./packaging/install.sh
 
 agents-roster            # start the panel
-agents-roster --version  # 0.3.1
+agents-roster --version  # 0.4.0
 ```
 
-Then connect Claude Code through its hooks: see [docs/INSTALL.md](docs/INSTALL.md).
+On Windows 11 (64-bit), download the `windows-x86_64` zip from Releases, extract it, and run
+`packaging\install.ps1 -Binary .\agents-roster.exe` from PowerShell. For source builds and
+Claude Code hook setup, see [Windows installation](docs/INSTALL-WINDOWS.md). On Linux, connect
+Claude Code through its hooks as described in [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Documentation
 
 | Document | Contents |
 |---|---|
-| [docs/INSTALL.md](docs/INSTALL.md) | Requirements, installing, Claude Code hooks, updating, uninstalling |
+| [docs/INSTALL.md](docs/INSTALL.md) | Linux requirements, installing, Claude Code hooks, updating, uninstalling |
+| [docs/INSTALL-WINDOWS.md](docs/INSTALL-WINDOWS.md) | Windows 11 build, install, hooks, and known limitations |
 | [docs/USAGE.md](docs/USAGE.md) | The panel, Control Panel, CLI, environment variables, troubleshooting |
 | [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | Tested and expected systems, X11 vs Wayland, supported agents |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Workspace crates, traits and contracts |
@@ -63,9 +67,7 @@ Then connect Claude Code through its hooks: see [docs/INSTALL.md](docs/INSTALL.m
 
 ## Compatibility at a glance
 
-Linux with an X11 or Wayland session. Fully tested on KDE Plasma 6 (X11); Wayland starts and runs but is
-new, and other distributions and desktops are expected to work but untested. Details and limits in
-[docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
+Linux with X11 or Wayland and Windows 11 x64 have platform backends. Linux has the existing runtime testing history; Windows support is an active port and still requires real-device validation. Details and limits in [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 
 ## Security and privacy
 

@@ -3,6 +3,7 @@
 
 //! System clock, local timezone formatting, and process UID queries (zero `unsafe`).
 
+#[cfg(unix)]
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -88,6 +89,7 @@ pub fn parse_glog_ms(line: &str, now_ms: u64) -> Option<u64> {
     None
 }
 
+#[cfg(unix)]
 fn parse_proc_uid(index: usize) -> Option<u32> {
     let status = fs::read_to_string("/proc/self/status").ok()?;
     let line = status.lines().find(|l| l.starts_with("Uid:"))?;
@@ -95,13 +97,27 @@ fn parse_proc_uid(index: usize) -> Option<u32> {
 }
 
 /// Real UID of the current process (from `/proc/self/status`).
+#[cfg(unix)]
 pub fn current_uid() -> u32 {
     parse_proc_uid(0).unwrap_or(1000)
 }
 
 /// Returns `true` when effective UID is `0`.
+#[cfg(unix)]
 pub fn is_effective_root() -> bool {
     parse_proc_uid(1) == Some(0)
+}
+
+/// Windows has no UID; exchange directories live under `%LOCALAPPDATA%` instead of `/run/user`.
+#[cfg(windows)]
+pub fn current_uid() -> u32 {
+    0
+}
+
+/// The hook exchange directory inherits the user's ACLs on Windows; no chown is ever needed.
+#[cfg(windows)]
+pub fn is_effective_root() -> bool {
+    false
 }
 
 #[cfg(test)]

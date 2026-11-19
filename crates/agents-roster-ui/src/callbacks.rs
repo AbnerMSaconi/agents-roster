@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 use agents_roster_core::{Agent, TerminalOpener};
 use slint::{ComponentHandle, PhysicalPosition};
 
-use crate::x11_hints::{is_wayland, start_native_move};
+use crate::window_hints::{is_wayland, start_native_move};
 
 use crate::app::{ConfigStore, Panel, PanelConfig};
 use crate::tray::TrayCommand;

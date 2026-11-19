@@ -445,8 +445,8 @@ msgstr "Opacidade do widget"
 msgid "Widget border"
 msgstr "Borda do widget"
 
-msgid "Blur effect (X11 compositor hint)"
-msgstr "Efeito blur (compositor X11)"
+msgid "Blur effect (system compositor)"
+msgstr "Efeito blur (compositor do sistema)"
 
 msgid "STATUS & TEXT COLORS"
 msgstr "CORES DE STATUS E TEXTO"
@@ -484,8 +484,8 @@ msgstr "FUNDO E BORDA DO WIDGET"
 msgid "BLUR"
 msgstr "BLUR"
 
-msgid "Needs an X11 compositor with blur support (e.g. KWin) and widget opacity below 100%."
-msgstr "Requer compositor X11 com suporte a blur (ex.: KWin) e opacidade do widget abaixo de 100%."
+msgid "Uses compositor blur (KWin on X11, acrylic on Windows 11) and needs widget opacity below 100%."
+msgstr "Usa blur do compositor (KWin no X11, acrílico no Windows 11) e requer opacidade do widget abaixo de 100%."
 
 msgid "Click again to confirm"
 msgstr "Clique de novo para confirmar"

@@ -12,7 +12,12 @@
 //!     agents-roster about                         prints authorship, license and provenance
 //!
 //! `--dir` is the exchange directory between hooks and the panel.
-//! Default: `$AGENTS_ROSTER_DIR`, or `/run/user/<uid>/agents-roster`.
+//! Default: `$AGENTS_ROSTER_DIR`, or `/run/user/<uid>/agents-roster` on Linux and
+//! `%LOCALAPPDATA%\agents-roster\run` on Windows.
+
+// GUI subsystem on Windows: no console window behind the panel. CLI commands re-attach to
+// the parent console (or keep the piped std handles Claude Code hands to hooks).
+#![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
 mod config;
 
@@ -33,10 +38,10 @@ use agents_roster_core::{
     AgentSource, PanelSettings, ServiceEntry, ServiceStatus, SnapshotCollector, TerminalOpener,
     Translator,
 };
-use agents_roster_notify::KdeNotifier;
+use agents_roster_notify::DesktopNotifier;
 use agents_roster_sources::{
     AgySource, ChronoTimeFormatter, ClaudeCodeSource, CodexSource, GenericProcessSource,
-    GitReflogInfo, ProcFsTable, SystemClock, current_uid, detect_installed_services, expand_tilde,
+    GitReflogInfo, SystemClock, SystemProcessTable, detect_installed_services, expand_tilde,
     handle_hook, handle_statusline,
 };
 use agents_roster_ui::{PoTranslator, SettingsBackend, SystemTerminalOpener, run_panel};
@@ -53,7 +58,14 @@ fn exchange_dir(args: &[String]) -> PathBuf {
     if let Ok(d) = std::env::var("AGENTS_ROSTER_DIR") {
         return PathBuf::from(d);
     }
-    PathBuf::from(format!("/run/user/{}/agents-roster", current_uid()))
+    #[cfg(windows)]
+    {
+        let base = std::env::var_os("LOCALAPPDATA")
+            .map_or_else(|| PathBuf::from(std::env::var("TEMP").unwrap_or_default()), PathBuf::from);
+        return base.join("agents-roster").join("run");
+    }
+    #[cfg(not(windows))]
+    PathBuf::from(format!("/run/user/{}/agents-roster", agents_roster_sources::current_uid()))
 }
 
 struct HostBackend {
@@ -81,7 +93,7 @@ fn build_collector_from_settings(
     home: &Path,
     settings: &PanelSettings,
 ) -> SnapshotCollector {
-    let procs = Arc::new(ProcFsTable);
+    let procs = Arc::new(SystemProcessTable);
     let git = Arc::new(GitReflogInfo);
     let clock = Arc::new(SystemClock);
     let fmt = Arc::new(ChronoTimeFormatter);
@@ -123,9 +135,13 @@ fn build_collector_from_settings(
     SnapshotCollector::with_processes(sources, procs)
 }
 
-/// `$HOME`, falling back to the filesystem root when unset.
+/// `$HOME` (Unix) or `%USERPROFILE%` (Windows), falling back to the filesystem root.
 fn home_dir() -> PathBuf {
-    std::env::var_os("HOME").map_or_else(|| PathBuf::from("/"), PathBuf::from)
+    #[cfg(windows)]
+    let key = "USERPROFILE";
+    #[cfg(not(windows))]
+    let key = "HOME";
+    std::env::var_os(key).map_or_else(|| PathBuf::from(std::path::MAIN_SEPARATOR_STR), PathBuf::from)
 }
 
 fn build_collector(dir: &Path, settings: &PanelSettings) -> SnapshotCollector {
@@ -174,9 +190,9 @@ fn run_gui(dir: PathBuf, open_settings: bool) -> Result<()> {
     } else {
         "Agents"
     };
-    let notifier = Box::new(KdeNotifier::new(app_name.into(), "agents-roster".into()));
+    let notifier = Box::new(DesktopNotifier::new(app_name.into(), "agents-roster".into()));
     let opener: Arc<dyn TerminalOpener> =
-        Arc::new(SystemTerminalOpener::new(Arc::new(ProcFsTable)));
+        Arc::new(SystemTerminalOpener::new(Arc::new(SystemProcessTable)));
     let clock = Arc::new(SystemClock);
     let fmt = Arc::new(ChronoTimeFormatter);
     run_panel(
@@ -195,10 +211,55 @@ fn run_gui(dir: PathBuf, open_settings: bool) -> Result<()> {
     Ok(())
 }
 
+/// Re-attaches stdout/stderr to the parent console for CLI use under the GUI subsystem.
+/// Skipped when std handles are already valid (piped hooks, redirected output).
+#[cfg(windows)]
+#[allow(unsafe_code)] // Audited Win32 console calls.
+fn attach_parent_console() {
+    use windows::Win32::Foundation::{GENERIC_READ, GENERIC_WRITE};
+    use windows::Win32::Storage::FileSystem::{
+        CreateFileW, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
+    };
+    use windows::Win32::System::Console::{
+        AttachConsole, GetStdHandle, SetStdHandle, ATTACH_PARENT_PROCESS, STD_ERROR_HANDLE,
+        STD_OUTPUT_HANDLE,
+    };
+    use windows::core::w;
+    unsafe {
+        if let Ok(h) = GetStdHandle(STD_OUTPUT_HANDLE)
+            && !h.is_invalid()
+            && !h.0.is_null()
+        {
+            return;
+        }
+        if AttachConsole(ATTACH_PARENT_PROCESS).is_err() {
+            return;
+        }
+        for std_id in [STD_OUTPUT_HANDLE, STD_ERROR_HANDLE] {
+            if let Ok(h) = CreateFileW(
+                w!("CONOUT$"),
+                GENERIC_READ.0 | GENERIC_WRITE.0,
+                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                None,
+                OPEN_EXISTING,
+                Default::default(),
+                None,
+            ) {
+                let _ = SetStdHandle(std_id, h);
+            }
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let dir = exchange_dir(&args);
-    match args.get(1).map(String::as_str) {
+    let cmd = args.get(1).map(String::as_str);
+    #[cfg(windows)]
+    if !matches!(cmd, None | Some("--dir" | "--settings")) {
+        attach_parent_console();
+    }
+    match cmd {
         Some("collect") => {
             if let Some(ev) = args.get(2) {
                 handle_hook(ev, &dir);

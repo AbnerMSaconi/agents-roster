@@ -9,13 +9,30 @@ use agents_roster_core::Translator;
 
 include!(concat!(env!("OUT_DIR"), "/catalog_pt.rs"));
 
-/// Detects whether `LC_ALL`, `LC_MESSAGES`, or `LANG` requests Portuguese.
+#[cfg(windows)]
+#[allow(unsafe_code)] // Single audited Win32 call for UI language detection.
+fn detect_windows_ui_language() -> u16 {
+    unsafe { windows::Win32::Globalization::GetUserDefaultUILanguage() }
+}
+
+/// Detects whether the locale requests Portuguese: `LC_ALL`/`LC_MESSAGES`/`LANG` on Unix,
+/// falling back to the Windows UI language (`GetUserDefaultUILanguage`) on Windows.
 pub fn detect_portuguese() -> bool {
-    ["LC_ALL", "LC_MESSAGES", "LANG"]
+    if ["LC_ALL", "LC_MESSAGES", "LANG"]
         .iter()
         .filter_map(|v| std::env::var(v).ok())
         .find(|v| !v.is_empty())
         .is_some_and(|loc| loc.to_ascii_lowercase().starts_with("pt"))
+    {
+        return true;
+    }
+    #[cfg(windows)]
+    {
+        // Primary language id 0x16 = Portuguese (pt-BR and pt-PT).
+        return (detect_windows_ui_language() & 0x3FF) == 0x16;
+    }
+    #[cfg(not(windows))]
+    false
 }
 
 /// [`Translator`] backed by the embedded `.po` catalog.

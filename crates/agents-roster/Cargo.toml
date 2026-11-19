@@ -13,8 +13,19 @@ build = "build.rs"
 name = "agents-roster"
 path = "src/main.rs"
 
-[lints]
-workspace = true
+[lints.rust]
+# Windows CLI console re-attachment calls audited Win32 APIs.
+unsafe_code = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+cast_possible_wrap = "allow"
 
 [dependencies]
 agents-roster-core.workspace = true
@@ -25,3 +36,6 @@ anyhow.workspace = true
 serde.workspace = true
 serde_json = "1"
 toml.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows.workspace = true

@@ -17,8 +17,7 @@ metadata inside the binary (`agents-roster --version` prints the version and com
    `git push origin v<version>`.
 
 The release workflow then fails if the tag does not match `Cargo.toml` or the CHANGELOG section is
-missing, builds on Ubuntu 22.04 with remapped paths, publishes the tarball, its `.sha256` and a signed
-build provenance attestation, and marks `0.x` releases as pre-releases.
+missing, builds Linux on Ubuntu 22.04 and Windows on `windows-latest`, publishes the Linux tarball and Windows zip (with SHA-256 checksums), and attests the Linux tarball provenance, and marks `0.x` releases as pre-releases.
 
 ## Signing with the project key
 

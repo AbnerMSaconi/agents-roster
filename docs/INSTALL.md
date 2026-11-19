@@ -1,6 +1,6 @@
 # Installation
 
-Current release: **0.3.0** (see [CHANGELOG](../CHANGELOG.md)). Check what you have with
+Current release: **0.4.0** (see [CHANGELOG](../CHANGELOG.md)). Check what you have with
 `agents-roster --version`.
 
 ## 1. Requirements

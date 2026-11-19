@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 AbnerMSaconi
 
-//! Persistent panel configuration (`~/.config/agents-roster/config.toml`).
+//! Persistent panel configuration: `~/.config/agents-roster/config.toml` on Linux,
+//! `%APPDATA%\agents-roster\config.toml` on Windows.
 
 use std::fs;
 use std::path::PathBuf;
@@ -82,6 +83,16 @@ impl From<&AppConfig> for PanelConfig {
 }
 
 fn config_base() -> PathBuf {
+    #[cfg(windows)]
+    {
+        if let Some(appdata) = std::env::var_os("APPDATA") {
+            return PathBuf::from(appdata);
+        }
+        return PathBuf::from(std::env::var("USERPROFILE").unwrap_or_default())
+            .join("AppData")
+            .join("Roaming");
+    }
+    #[cfg(not(windows))]
     std::env::var("XDG_CONFIG_HOME").map_or_else(
         |_| PathBuf::from(std::env::var("HOME").unwrap_or_default()).join(".config"),
         PathBuf::from,

@@ -32,8 +32,28 @@ fn find_in_path(bin: &str) -> Option<PathBuf> {
         if p.is_file() {
             return Some(p);
         }
+        // Windows: `claude` on PATH is usually `claude.cmd` (npm) or `claude.exe` (native).
+        #[cfg(windows)]
+        for ext in pathext_extensions() {
+            let pe = dir.join(format!("{bin}{ext}"));
+            if pe.is_file() {
+                return Some(pe);
+            }
+        }
     }
     None
+}
+
+/// Lowercased extensions from `%PATHEXT%` (`.com;.exe;.bat;.cmd;...` by default).
+#[cfg(windows)]
+fn pathext_extensions() -> Vec<String> {
+    std::env::var("PATHEXT")
+        .unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into())
+        .split(';')
+        .map(str::trim)
+        .filter(|e| e.starts_with('.') && e.len() > 1)
+        .map(str::to_ascii_lowercase)
+        .collect()
 }
 
 fn default_probe_dirs(home: &Path, id: &str) -> Vec<PathBuf> {

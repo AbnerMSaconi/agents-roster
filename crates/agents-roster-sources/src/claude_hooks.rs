@@ -5,6 +5,7 @@
 
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom};
+#[cfg(unix)]
 use std::os::unix::fs::{MetadataExt, PermissionsExt, chown};
 use std::path::{Path, PathBuf};
 
@@ -15,8 +16,10 @@ use serde_json::Value;
 use crate::claude_model::{
     Session, SubagentEntry, TaskItem, describe_tool, json_str, parse_tasks, valid_session_id,
 };
-use crate::procfs::find_ancestor;
-use crate::sys::{SystemClock, is_effective_root};
+use crate::find_ancestor;
+use crate::sys::SystemClock;
+#[cfg(unix)]
+use crate::sys::is_effective_root;
 
 pub(crate) fn read_stdin_json() -> Option<Value> {
     let mut s = String::new();
@@ -30,15 +33,20 @@ pub(crate) fn prepare_exchange_dir(dir: &Path) -> Option<PathBuf> {
         return Some(sub);
     }
     fs::create_dir_all(&sub).ok()?;
-    if is_effective_root()
-        && let Some(parent) = dir.parent().and_then(|p| fs::metadata(p).ok())
+    // Unix hardening: root-run hooks hand the directory back to the session user and make it
+    // group/world readable. On Windows the directory inherits the user profile ACLs.
+    #[cfg(unix)]
     {
-        for p in [dir, sub.as_path()] {
-            let _ = chown(p, Some(parent.uid()), Some(parent.gid()));
+        if is_effective_root()
+            && let Some(parent) = dir.parent().and_then(|p| fs::metadata(p).ok())
+        {
+            for p in [dir, sub.as_path()] {
+                let _ = chown(p, Some(parent.uid()), Some(parent.gid()));
+            }
         }
+        let _ = fs::set_permissions(dir, fs::Permissions::from_mode(0o755));
+        let _ = fs::set_permissions(&sub, fs::Permissions::from_mode(0o755));
     }
-    let _ = fs::set_permissions(dir, fs::Permissions::from_mode(0o755));
-    let _ = fs::set_permissions(&sub, fs::Permissions::from_mode(0o755));
     Some(sub)
 }
 
@@ -67,6 +75,7 @@ pub(crate) fn with_session(dir: &Path, id: &str, f: impl FnOnce(&mut Session)) -
     ss.updated_at_ms = now;
     let tmp = sub.join(format!(".{id}.tmp"));
     fs::write(&tmp, serde_json::to_vec(&ss).ok()?).ok()?;
+    #[cfg(unix)]
     let _ = fs::set_permissions(&tmp, fs::Permissions::from_mode(0o644));
     fs::rename(&tmp, &path).ok()?;
     Some(ss)

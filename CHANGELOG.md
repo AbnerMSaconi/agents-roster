@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — 2026-11-19
+
+- Added the Windows 11 x64 platform backend: process discovery, command-line/current-directory inspection, best-effort open-file paths, notification-area tray, DWM window hints, terminal integration, and Windows toast notifications.
+- Added per-user PowerShell installation/uninstallation, Windows installation documentation, Windows CI checks, and Windows x86_64 release archives.
+- Bounded Windows open-handle name resolution to 64 lookups / 750 ms per refresh and permanently stop queuing work after a blocked kernel lookup, preventing repeated abandoned resolver threads.
+- Clarified that Windows support is an active port pending real Windows 11 runtime validation; Linux remains supported independently.
+
 ## 0.3.1
 
 - Added `agents-roster --settings`, which opens the panel together with the Control Panel window (useful for screenshots, bug reports and desktops without a tray).

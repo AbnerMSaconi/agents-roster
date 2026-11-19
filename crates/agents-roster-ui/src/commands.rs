@@ -7,22 +7,21 @@ use std::sync::atomic::Ordering;
 use std::time::Instant;
 
 use agents_roster_core::{NotificationEngine, PanelSettings};
-use ksni::blocking::Handle as TrayHandle;
 use slint::ComponentHandle;
 
 use crate::app::{LoopDeps, PanelConfig};
 use crate::callbacks::update_ui;
 use crate::settings_ui::open_settings_window;
 use crate::theme::Palette;
-use crate::tray::{TrayCommand, TrayIcon};
+use crate::tray::{TrayCommand, TrayHandle, TrayIcon};
 use crate::view_model::PanelView;
-use crate::x11_hints::{apply_blur_behind, apply_skip_taskbar, refresh_compositor};
+use crate::window_hints::{apply_blur_behind, apply_skip_taskbar, refresh_compositor};
 
 pub(crate) fn handle_command(
     cmd: TrayCommand,
     deps: &mut LoopDeps,
     engine: &mut NotificationEngine,
-    handle: Option<&TrayHandle<TrayIcon>>,
+    handle: Option<&TrayHandle>,
     prev_ui: &mut Option<PanelView>,
     next_tick: &mut Instant,
 ) -> bool {
@@ -35,7 +34,7 @@ pub(crate) fn handle_command(
             save_cfg(deps, |c| c.always_on_top = top);
             update_ui(&deps.panel, move |p| {
                 p.set_keep_on_top(top);
-                crate::x11_hints::apply_always_on_top(&p, top);
+                crate::window_hints::apply_always_on_top(&p, top);
             });
         }
         TrayCommand::Reminders(enabled) => {
@@ -86,7 +85,7 @@ fn toggle_visible(deps: &LoopDeps, prev_ui: &mut Option<PanelView>, next_tick: &
 fn apply_new_settings(
     deps: &mut LoopDeps,
     engine: &mut NotificationEngine,
-    handle: Option<&TrayHandle<TrayIcon>>,
+    handle: Option<&TrayHandle>,
     prev_ui: &mut Option<PanelView>,
     next_tick: &mut Instant,
     new_cfg: &PanelSettings,
@@ -139,7 +138,7 @@ fn apply_new_settings(
     update_ui(&deps.panel, move |p| {
         pal.apply_to_panel(&p);
         p.set_keep_on_top(top);
-        crate::x11_hints::apply_always_on_top(&p, top);
+        crate::window_hints::apply_always_on_top(&p, top);
         p.set_reminders(rem);
         if vis_changed {
             if show {

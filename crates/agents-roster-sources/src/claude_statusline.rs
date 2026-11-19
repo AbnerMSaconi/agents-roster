@@ -4,6 +4,7 @@
 //! Claude Code statusline handler: updates session context and account rate limits.
 
 use std::fs;
+#[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
@@ -87,6 +88,7 @@ fn write_limits(dir: &Path, w5: Option<&UsageWindow>, w7: Option<&UsageWindow>) 
     if let Ok(b) = serde_json::to_vec(&stored)
         && fs::write(&tmp, b).is_ok()
     {
+        #[cfg(unix)]
         let _ = fs::set_permissions(&tmp, fs::Permissions::from_mode(0o644));
         let _ = fs::rename(&tmp, sub.join("limites.json"));
     }

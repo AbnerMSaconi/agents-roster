@@ -11,7 +11,6 @@ use agents_roster_core::{
     Agent, Clock, NotificationEngine, Notifier, PanelSettings, SnapshotCollector, TerminalOpener,
     TimeFormatter, Translator,
 };
-use ksni::blocking::{Handle as TrayHandle, TrayMethods};
 use slint::{ComponentHandle, ModelRc, PhysicalPosition, VecModel};
 use thiserror::Error;
 
@@ -20,9 +19,9 @@ use crate::commands::handle_command;
 use crate::i18n::PoTranslator;
 use crate::settings_ui::SettingsBackend;
 use crate::theme::Palette;
-use crate::tray::{TrayCommand, TrayIcon};
+use crate::tray::{TrayCommand, TrayHandle, TrayIcon, spawn_tray};
 use crate::view_model::{PanelView, build_panel_view, build_tray_view};
-use crate::x11_hints;
+use crate::window_hints;
 
 slint::include_modules!();
 
@@ -91,7 +90,7 @@ pub fn run_panel(
     tr: PoTranslator,
     open_settings: bool,
 ) -> Result<(), UiError> {
-    x11_hints::configure_backend(initial.hide_from_taskbar);
+    window_hints::configure_backend(initial.hide_from_taskbar);
     let panel = Panel::new()?;
     tr.apply_to_slint();
     let pal = Palette::from_config(&initial_settings.theme, &initial_settings.services);
@@ -106,7 +105,7 @@ pub fn run_panel(
     let reminders = Arc::new(AtomicBool::new(initial.reminder_min > 0));
     let hide_tb = Arc::new(AtomicBool::new(initial.hide_from_taskbar));
     let blur_flag = Arc::new(AtomicBool::new(initial_settings.theme.blur));
-    // Window hints are re-applied once the X11 window is actually mapped.
+    // Window hints are re-applied once the native window is actually mapped/shown.
     let window_pending = Arc::new(AtomicBool::new(initial.visible));
     let cfg = Arc::new(Mutex::new(initial));
     let settings = Arc::new(Mutex::new(initial_settings));
@@ -115,7 +114,7 @@ pub fn run_panel(
     let (tx, rx) = mpsc::channel::<TrayCommand>();
 
     let top_cfg = Arc::clone(&cfg);
-    x11_hints::install_window_hooks(
+    window_hints::install_window_hooks(
         &panel,
         Arc::new(move || top_cfg.lock().map_or(true, |c| c.always_on_top)),
         hide_tb.clone(),
@@ -173,7 +172,7 @@ fn run_collector_thread(
         always_on_top: initial.always_on_top,
         reminders: initial.reminder_min > 0,
     };
-    let handle = tray.spawn().ok();
+    let handle = spawn_tray(tray);
     let mut engine = NotificationEngine::default();
     if let Ok(s) = deps.settings.lock() {
         engine.set_prefs(s.notifications.clone());
@@ -209,7 +208,7 @@ fn run_collector_thread(
 fn on_tick(
     deps: &mut LoopDeps,
     engine: &mut NotificationEngine,
-    handle: Option<&TrayHandle<TrayIcon>>,
+    handle: Option<&TrayHandle>,
     prev_ui: &mut Option<PanelView>,
 ) {
     let now_ms = deps.clock.now_ms();

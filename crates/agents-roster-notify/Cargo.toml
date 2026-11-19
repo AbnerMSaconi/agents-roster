@@ -7,9 +7,26 @@ license.workspace = true
 publish.workspace = true
 repository.workspace = true
 
-[lints]
-workspace = true
+[lints.rust]
+# Windows toast registration uses COM (shell links, property store) and the registry.
+unsafe_code = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+cast_possible_wrap = "allow"
 
 [dependencies]
 agents-roster-core.workspace = true
+tracing.workspace = true
+
+[target.'cfg(unix)'.dependencies]
 zbus.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows.workspace = true

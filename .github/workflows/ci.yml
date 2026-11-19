@@ -28,3 +28,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: EmbarkStudios/cargo-deny-action@v2
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.93.0
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+      - name: Clippy (Windows target)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test (Windows target)
+        run: cargo test --workspace
+      - name: Build release binary
+        run: cargo build --release --locked

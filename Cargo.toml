@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.3.1"
+version = "0.4.0"
 repository = "https://github.com/AbnerMSaconi/agents-roster"
 edition = "2024"
 rust-version = "1.93"
@@ -28,12 +28,43 @@ thiserror = "2"
 anyhow = "1"
 tracing = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
+slint-build = "1"
+
+# Linux-only platform backends (SNI tray, freedesktop notifications, X11 hints).
 zbus = "5"
 ksni = { version = "0.3", default-features = false, features = ["blocking", "async-io"] }
-slint = { version = "1", default-features = false, features = ["std", "compat-1-2", "backend-winit-x11", "backend-winit-wayland", "renderer-software", "unstable-winit-030"] }
-raw-window-handle = "0.6"
 x11rb = "0.13"
-slint-build = "1"
+
+# Windows-only platform backend (Win32 process table, tray, DWM hints, WinRT toasts).
+# One feature union shared by every crate so the `windows` crate compiles once.
+windows = { version = "0.62", features = [
+    "Data_Xml_Dom",
+    "Foundation",
+    "UI_Notifications",
+    "Win32_Foundation",
+    "Win32_Globalization",
+    "Win32_Graphics_Dwm",
+    "Win32_Graphics_Gdi",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Console",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_System_Variant",
+    "Win32_System_WinRT",
+    "Win32_System_WindowsProgramming",
+    "Win32_UI_Controls",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Notifications",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_UI_WindowsAndMessaging",
+] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

@@ -5,9 +5,7 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
-  id-token: write       # keyless signing identity for build provenance
-  attestations: write   # publish signed provenance for the tarball
+  contents: read
 
 jobs:
   verify:
@@ -18,9 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - id: v
         name: Tag must match the workspace version and have release notes
+        env:
+          TAG_NAME: ${{ github.ref_name }}
         run: |
           VERSION=$(sed -n '/^\[workspace.package\]/,/^\[/{s/^version = "\(.*\)"/\1/p}' Cargo.toml)
-          [ "v$VERSION" = "${{ github.ref_name }}" ] || { echo "tag ${{ github.ref_name }} does not match Cargo.toml version $VERSION"; exit 1; }
+          [ "v$VERSION" = "$TAG_NAME" ] || { echo "tag $TAG_NAME does not match Cargo.toml version $VERSION"; exit 1; }
           scripts/release-notes.sh "$VERSION" > release-notes.md
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
@@ -28,9 +28,13 @@ jobs:
           name: release-notes
           path: release-notes.md
 
-  build:
+  build-linux:
     needs: verify
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     env:
       AGENTS_ROSTER_COMMIT: ${{ github.sha }}
     steps:
@@ -41,23 +45,68 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libfontconfig1-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libwayland-dev pkg-config
       - name: Build tarball (paths remapped so no build directory leaks into the binary)
         run: ./scripts/package-release.sh
-      - name: Sign build provenance (ties the tarball to this repo, commit and workflow)
+      - name: Sign build provenance
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: dist/*.tar.gz
       - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: linux-dist
           path: dist/*.tar.gz*
 
+  build-windows:
+    needs: verify
+    runs-on: windows-latest
+    env:
+      AGENTS_ROSTER_COMMIT: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.93.0
+      - uses: Swatinem/rust-cache@v2
+      - name: Build Windows binary
+        run: cargo build --release --locked
+      - name: Stage Windows release archive
+        shell: pwsh
+        run: |
+          $version = (cargo metadata --no-deps --format-version 1 | ConvertFrom-Json).packages | Where-Object { $_.name -eq 'agents-roster' } | Select-Object -First 1 -ExpandProperty version
+          $name = "agents-roster-$version-windows-x86_64"
+          $stage = Join-Path $PWD "dist\$name"
+          New-Item -ItemType Directory -Force -Path $stage, (Join-Path $stage 'packaging'), (Join-Path $stage 'docs') | Out-Null
+          Copy-Item 'target\release\agents-roster.exe' $stage
+          Copy-Item 'packaging\install.ps1', 'packaging\uninstall.ps1' (Join-Path $stage 'packaging')
+          Copy-Item 'docs\INSTALL-WINDOWS.md', 'docs\USAGE.md', 'docs\COMPATIBILITY.md' (Join-Path $stage 'docs')
+          Copy-Item 'README.md', 'LICENSE', 'NOTICE', 'THIRD_PARTY.md', 'CHANGELOG.md', 'SECURITY.md' $stage
+          @(
+            "name: agents-roster",
+            "version: $version",
+            "commit: $env:AGENTS_ROSTER_COMMIT",
+            'target: windows-x86_64-msvc',
+            "built: $([DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))",
+            "rustc: $(rustc --version)"
+          ) | Set-Content -Encoding utf8 (Join-Path $stage 'BUILD-INFO.txt')
+          Compress-Archive -Path $stage -DestinationPath "dist\$name.zip" -Force
+          $zip = Get-Item "dist\$name.zip"
+          $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLowerInvariant()
+          "$hash  $($zip.Name)" | Set-Content -Encoding ascii "$($zip.FullName).sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-dist
+          path: dist/*.zip*
+
   publish:
-    needs: build
+    needs: [verify, build-linux, build-windows]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: "*"
+          pattern: "*-dist"
           merge-multiple: true
+          path: out
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
           path: out
       - uses: softprops/action-gh-release@v2
         with:
@@ -67,3 +116,5 @@ jobs:
           files: |
             out/*.tar.gz
             out/*.tar.gz.sha256
+            out/*.zip
+            out/*.zip.sha256

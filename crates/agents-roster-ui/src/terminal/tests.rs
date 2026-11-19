@@ -30,7 +30,9 @@ fn picks_closest_ancestor_and_breaks_ties_by_project_title() {
 }
 
 #[test]
+#[cfg(unix)]
 fn orders_terminal_candidates_by_env_and_desktop() {
+    let linux_terminal_candidates = super::imp::linux_terminal_candidates;
     let kde = linux_terminal_candidates(Some("kitty"), "KDE");
     assert_eq!(kde[0], "kitty");
     assert_eq!(kde[1], "xdg-terminal-exec");

@@ -26,7 +26,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "agents-roster"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "agents-roster-core",
  "agents-roster-notify",
@@ -36,11 +36,12 @@ dependencies = [
  "serde",
  "serde_json",
  "toml 0.9.12+spec-1.1.0",
+ "windows",
 ]
 
 [[package]]
 name = "agents-roster-core"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "serde",
  "thiserror 2.0.21",
@@ -48,26 +49,28 @@ dependencies = [
 
 [[package]]
 name = "agents-roster-notify"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "agents-roster-core",
+ "tracing",
+ "windows",
  "zbus",
 ]
 
 [[package]]
 name = "agents-roster-sources"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "agents-roster-core",
  "chrono",
  "serde",
  "serde_json",
- "tracing",
+ "windows",
 ]
 
 [[package]]
 name = "agents-roster-ui"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "agents-roster-core",
  "ksni",
@@ -75,6 +78,7 @@ dependencies = [
  "slint-build",
  "thiserror 2.0.21",
  "tracing",
+ "windows",
  "x11rb",
 ]
 
