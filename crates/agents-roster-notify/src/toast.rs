@@ -21,10 +21,9 @@ use windows::Win32::System::Registry::{
 };
 use windows::Win32::Foundation::PROPERTYKEY;
 use windows::Win32::System::Com::StructuredStorage::PROPVARIANT;
-use windows::Win32::System::Variant::VT_LPWSTR;
 use windows::Win32::UI::Shell::{IShellLinkW, ShellLink};
 use windows::Win32::UI::Shell::PropertiesSystem::IPropertyStore;
-use windows::core::{GUID, HSTRING, HRESULT, Interface, PCWSTR, PWSTR};
+use windows::core::{GUID, HSTRING, HRESULT, Interface, PCWSTR};
 use windows::Data::Xml::Dom::XmlDocument;
 use windows::UI::Notifications::{ToastNotification, ToastNotificationManager};
 
@@ -165,17 +164,14 @@ fn create_start_menu_shortcut(app_name: &str) -> windows::core::Result<()> {
 
     // Tag the shortcut with System.AppUserModel.ID so the shell maps toasts to this app.
     let store: IPropertyStore = link.cast()?;
-    let mut aumid = wide(AUMID);
-    let mut pv: PROPVARIANT = unsafe { core::mem::zeroed() };
-    unsafe {
-        (*pv.Anonymous.Anonymous).vt = VT_LPWSTR;
-        (*pv.Anonymous.Anonymous).Anonymous.pwszVal = PWSTR(aumid.as_mut_ptr());
-    }
+    // `PROPVARIANT::from(&str)` allocates the string with the COM allocator, which is what the
+    // PROPVARIANT's `Drop` (PropVariantClear) frees. Pointing it at a Rust-owned buffer would
+    // make that free corrupt the heap.
+    let pv = PROPVARIANT::from(AUMID);
     unsafe {
         store.SetValue(&PKEY_APP_USER_MODEL_ID, &pv)?;
         store.Commit()?;
     }
-    // The PROPVARIANT borrows `aumid`; do not clear it (we own the buffer).
     let file: IPersistFile = link.cast()?;
     unsafe { file.Save(PCWSTR(wide(&lnk.to_string_lossy()).as_ptr()), true) }
 }

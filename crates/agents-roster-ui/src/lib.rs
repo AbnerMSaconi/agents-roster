@@ -6,6 +6,7 @@
 //! Platform backends: Linux uses the SNI tray (`ksni`) and X11/Wayland window hints;
 //! Windows 11 uses the Win32 notification-area icon and DWM window hints.
 
+pub mod agent_control;
 pub mod app;
 pub mod callbacks;
 pub mod commands;

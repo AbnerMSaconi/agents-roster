@@ -41,6 +41,13 @@ impl TerminalOpener for SystemTerminalOpener {
             );
         }
     }
+
+    fn focus_agent_terminal(&self, agent: &Agent) -> bool {
+        let Some(pid) = agent.pid else { return false };
+        let ancestors = self.procs.ancestor_pids(pid);
+        !ancestors.is_empty()
+            && imp::focus_existing_terminal(self.procs.as_ref(), &ancestors, &agent.project)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

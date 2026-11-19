@@ -54,7 +54,9 @@ export component Panel inherits Window {
     in property <bool> reminders: true;
     callback drag(length, length);
     callback drop-window();
+    in-out property <string> hover-key;
     callback open-agent(string);
+    callback agent-action(string, string);
     callback toggle-visible();
     callback toggle-top();
     callback toggle-reminders();
@@ -70,6 +72,7 @@ export component Panel inherits Window {
     height: body.preferred-height;
 
     ContextMenuArea {
+        enabled: root.hover-key == "";
         Menu {
             MenuItem { title: @tr("Control Panel..."); activated => { root.open-settings(); } }
             MenuItem { title: @tr("Hide"); activated => { root.toggle-visible(); } }
@@ -121,6 +124,13 @@ export component Panel inherits Window {
 
                     card-ta := TouchArea {
                         property <bool> dragging: false;
+                        changed has-hover => {
+                            if (self.has-hover) {
+                                root.hover-key = a.key;
+                            } else if (root.hover-key == a.key) {
+                                root.hover-key = "";
+                            }
+                        }
                         mouse-cursor: self.dragging ? MouseCursor.move : MouseCursor.pointer;
                         moved => {
                             if (self.pressed && (self.dragging || abs(self.mouse-x - self.pressed-x) > 4px || abs(self.mouse-y - self.pressed-y) > 4px)) {
@@ -171,6 +181,18 @@ export component Panel inherits Window {
                             if a.reason != "": Row { label: ""; value: a.reason; color: a.reason-color; }
                             if a.next != "": Row { label: @tr("next"); value: a.next; }
                             if a.done != "": Row { label: @tr("done"); value: a.done; color: Colors.muted; }
+                        }
+                    }
+
+                    ContextMenuArea {
+                        Menu {
+                            MenuItem { title: @tr("Open"); activated => { root.agent-action(a.key, "open"); } }
+                            MenuItem { title: @tr("Continue"); activated => { root.agent-action(a.key, "continue"); } }
+                            MenuItem { title: @tr("Do it faster"); activated => { root.agent-action(a.key, "faster"); } }
+                            MenuItem { title: @tr("Interrupt (Esc)"); activated => { root.agent-action(a.key, "interrupt"); } }
+                            MenuItem { title: @tr("Freeze"); activated => { root.agent-action(a.key, "freeze"); } }
+                            MenuItem { title: @tr("Resume"); activated => { root.agent-action(a.key, "resume"); } }
+                            MenuItem { title: @tr("Kill..."); activated => { root.agent-action(a.key, "kill"); } }
                         }
                     }
                 }

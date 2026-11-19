@@ -173,7 +173,7 @@ struct AccentPolicy {
 struct WindowCompositionAttrData {
     attribute: u32,
     data: *mut core::ffi::c_void,
-    size_of_data: u32,
+    size_of_data: usize,
 }
 
 const WCA_ACCENT_POLICY: u32 = 19;
@@ -200,7 +200,7 @@ fn accent_blur_fallback(hwnd: HWND, enabled: bool) {
     let mut data = WindowCompositionAttrData {
         attribute: WCA_ACCENT_POLICY,
         data: (&mut policy as *mut AccentPolicy).cast(),
-        size_of_data: core::mem::size_of::<AccentPolicy>() as u32,
+        size_of_data: core::mem::size_of::<AccentPolicy>(),
     };
     if let Some(f) = set_window_composition_attribute() {
         let _ = unsafe { f(hwnd, &mut data) };

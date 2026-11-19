@@ -68,6 +68,19 @@ pub(crate) fn wire_panel_callbacks(
             std::thread::spawn(move || opener.open_agent_terminal(&agent));
         }
     });
+    let (agents_c, opener_c) = (agents.clone(), opener.clone());
+    panel.on_agent_action(move |key, action| {
+        let found = agents_c
+            .lock()
+            .ok()
+            .and_then(|list| list.iter().find(|a| a.key == key.as_str()).cloned());
+        if let Some(agent) = found {
+            let (opener, action) = (opener_c.clone(), action.to_string());
+            std::thread::spawn(move || {
+                crate::agent_control::run(&action, &agent, opener.as_ref());
+            });
+        }
+    });
     wire_menu_callbacks(panel, tx);
 }
 

@@ -91,6 +91,14 @@ pub trait ProcessTable: Send + Sync {
 pub trait TerminalOpener: Send + Sync {
     /// Focuses the open terminal running `agent`, or opens the system default terminal in its directory.
     fn open_agent_terminal(&self, agent: &Agent);
+
+    /// Focuses the already-open terminal running `agent` without ever launching a new one.
+    ///
+    /// Returns `false` when no such window exists (or the platform cannot tell). Callers that
+    /// inject input must treat `false` as "do not type anything".
+    fn focus_agent_terminal(&self, _agent: &Agent) -> bool {
+        false
+    }
 }
 
 /// Repository commit history reader.
